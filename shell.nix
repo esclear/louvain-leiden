@@ -1,8 +1,9 @@
 let pkgs = import <nixpkgs> {};
-mypython = pkgs.python3.withPackages (ps: with ps; [ networkx black flake8 pytest virtualenv pip pre-commit jupyter_core notebook]);
+mypython = pkgs.python3.withPackages (ps: with ps; [ networkx scipy black flake8 pytest virtualenv pip jupyter_core notebook]);
 in pkgs.mkShell {
   buildInputs = [
     mypython
+    pkgs.pre-commit
   ];
   shellHook = ''
         alias pip="PIP_PREFIX='$(pwd)/_build/pip_packages' \pip"
