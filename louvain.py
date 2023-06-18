@@ -1,11 +1,18 @@
-from networkx import Graph, MultiGraph
+from networkx import Graph
 
-from utils import *
+from .utils import (
+    aggregate_graph,
+    argmax,
+    flatₚ,
+    Partition,
+    QualityMetric,
+    singleton_partition,
+)
 
 
-def move_nodes(G: Graph, 𝓟: Partition, 𝓗: QualityFunction) -> Partition:
+def move_nodes(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition:
     while True:
-        # Store current ("old") quality function value
+        # Store current ("o" for "old") quality function value
         𝓗ₒ = 𝓗(G, 𝓟)
 
         for v in G.nodes:
@@ -22,25 +29,29 @@ def move_nodes(G: Graph, 𝓟: Partition, 𝓗: QualityFunction) -> Partition:
             return 𝓟
 
 
-def louvain(G: Graph, 𝓗: QualityFunction, 𝓟: Partition = None) -> Partition:
+def louvain(G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None) -> Partition:
     """
     Implementation of the Louvain algorithm for community detection.
     """
-    # If there is no partition given, start with all nodes in the same community
-    if 𝓟 == None:
+    # If there is no partition given, start with all nodes in the same community.
+    if 𝓟 is None:
         𝓟 = Partition(G, [{v for v in G.nodes}])
 
     # Remember the original graph
     O = G
+
     while True:
+        # First phase: Move nodes locally
         𝓟 = move_nodes(G, 𝓟, 𝓗)
 
-        # When every community consists of a single node only, terminate,
-        # returning the flat partition given by 𝓟
+        # When every community consists of a single node, terminate,
+        # returning the flattened partition, as given by 𝓟.
         if len(𝓟.sets) == len(G.nodes):
             return Partition(O, flatₚ(𝓟))
 
-        # Create the aggregate graph of G based on 𝓟
+        # Second phase: Aggregation of the network
+        # Create the aggregate graph of G based on the partition 𝓟
         G = aggregate_graph(G, 𝓟)
-        # And update 𝓟 to be a singleton partition of G
+        # And update 𝓟 to be a singleton partition of G, i.e. every node in the aggregate graph G
+        # is assigned to its own community.
         𝓟 = singleton_partition(G)

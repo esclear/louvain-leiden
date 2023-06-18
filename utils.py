@@ -52,7 +52,9 @@ class Partition:
             (p | {v} if p == target else p - {v})
             # for all sets p in this parition
             for p in self
-        ] + ([ {v} ] if target == {} else []) # If the target is an empty set, put v in there
+        ] + (
+            [{v}] if target == {} else []
+        )  # If the target is an empty set, also include v, otherwise don't
 
         # And remove empty sets from the partition
         new_partitions = [p for p in new_partitions if len(p) > 0]
@@ -72,8 +74,10 @@ class Partition:
         return self.sets.__iter__()
 
 
-class QualityFunction(ABC):
-    """"""
+class QualityMetric(ABC):
+    """
+    A metric that, when called, measures the quality of a partition into communities.
+    """
 
     @classmethod
     @abstractmethod
@@ -81,7 +85,11 @@ class QualityFunction(ABC):
         raise NotImplementedError()
 
 
-class Modularity(QualityFunction):
+class Modularity(QualityMetric):
+    """
+    Implementation of the Constant Potts Model (CPM) as a quality function.
+    """
+
     def __init__(self, γ: float = 0.25):
         self.γ = γ
 
@@ -91,7 +99,7 @@ class Modularity(QualityFunction):
         degree = dict(G.degree())
         deg_sum = sum(degree.values())
         m = deg_sum / 2
-        norm = 1 / deg_sum ** 2
+        norm = 1 / deg_sum**2
 
         def community_contribution(community):
             comm = set(community)
@@ -104,13 +112,14 @@ class Modularity(QualityFunction):
         return sum(map(community_contribution, communities))
 
 
-class CPM(QualityFunction):
+class CPM(QualityMetric):
     """
     Implementation of the Constant Potts Model (CPM) as a quality function.
     """
 
     @classmethod
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
+        # TODO: Implement CPM
         pass
 
 
@@ -125,7 +134,8 @@ def recursive_size(S: Union[List, object]) -> int:
 
 
 def flat(S: Union[Set, object]) -> Set:
-    # "unfreeze" up frozen sets
+    """ """
+    # "unfreeze" frozen sets
     if isinstance(S, frozenset):
         S = set(S)
 
@@ -137,9 +147,9 @@ def flat(S: Union[Set, object]) -> Set:
 
 def flatₚ(𝓟: Partition) -> List:
     """
-    Flatten a partition.
+    Flatten a partition into a list of communities (each of which represented as a set).
     """
-    return [ flat(C) for C in 𝓟 ]
+    return [flat(C) for C in 𝓟]
 
 
 T = TypeVar("T")

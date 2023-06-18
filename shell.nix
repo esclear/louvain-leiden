@@ -1,5 +1,16 @@
 let pkgs = import <nixpkgs> {};
-mypython = pkgs.python3.withPackages (ps: with ps; [ networkx scipy black flake8 pytest virtualenv pip jupyter_core notebook]);
+mypython = pkgs.python3.withPackages (ps: with ps; [
+    # For the library
+    networkx scipy
+    # Development (code formatting)
+    black flake8
+    # Testing
+    pytest
+    # Package management
+    virtualenv pip
+    # Demonstration notebook
+    jupyter_core notebook matplotlib
+  ]);
 in pkgs.mkShell {
   buildInputs = [
     mypython
