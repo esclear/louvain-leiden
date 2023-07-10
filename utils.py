@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from functools import reduce
 from typing import Callable, List, Optional, Set, Tuple, TypeVar, Union
 
+import networkx as nx
 from networkx import Graph, MultiGraph
 from networkx.algorithms.community import community_utils
 
@@ -87,6 +88,33 @@ class QualityMetric(ABC):
 
 class Modularity(QualityMetric):
     """
+    Implementation of Modularity as a quality function.
+    """
+
+    def __init__(self, γ: float = 0.25):
+        self.γ = γ
+
+    def __call__(self, G: Graph, 𝓟: Partition) -> float:
+        communities = 𝓟.sets
+
+        degrees = dict(G.degree())
+        two_m = sum(degrees.values())
+        norm = self.γ / two_m
+
+        def community_contribution(community):
+            # Calculate the contribution of nodes from the community `community`
+            # First, determine the number of edges within that community
+            e_c = len(nx.induced_subgraph(G, community).edges)
+
+            degree_sum = sum(degrees[u] for u in community)
+
+            return e_c - norm * degree_sum**2
+
+        return sum(map(community_contribution, communities)) / two_m
+
+
+class CPM(QualityMetric):
+    """
     Implementation of the Constant Potts Model (CPM) as a quality function.
     """
 
@@ -96,31 +124,17 @@ class Modularity(QualityMetric):
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         communities = 𝓟.sets
 
-        degree = dict(G.degree())
-        deg_sum = sum(degree.values())
-        m = deg_sum / 2
-        norm = 1 / deg_sum**2
+        degrees = dict(G.degree())
 
         def community_contribution(community):
-            comm = set(community)
-            L_c = sum(1 for u, v in G.edges(comm) if v in comm)
+            # Calculate the contribution of nodes from the community `community`
+            # First, determine the number of edges within that community
+            n_c = len(community)
+            e_c = len(nx.induced_subgraph(G, community).edges)
 
-            degree_sum = sum(degree[u] for u in comm)
-
-            return L_c / m - self.γ * degree_sum * degree_sum * norm
+            return e_c - self.γ * n_c * (n_c - 1) / 2
 
         return sum(map(community_contribution, communities))
-
-
-class CPM(QualityMetric):
-    """
-    Implementation of the Constant Potts Model (CPM) as a quality function.
-    """
-
-    @classmethod
-    def __call__(self, G: Graph, 𝓟: Partition) -> float:
-        # TODO: Implement CPM
-        pass
 
 
 def recursive_size(S: Union[List, object]) -> int:
