@@ -33,9 +33,9 @@ def louvain(G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None) -> Partition:
     """
     Implementation of the Louvain algorithm for community detection.
     """
-    # If there is no partition given, start with all nodes in the same community.
+    # If there is no partition given, start with every node in its' own community
     if 𝓟 is None:
-        𝓟 = Partition(G, [{v for v in G.nodes}])
+        𝓟 = singleton_partition(G)
 
     # Remember the original graph
     O = G

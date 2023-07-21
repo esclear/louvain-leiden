@@ -48,10 +48,10 @@ class Partition:
         assert target in self.sets or target == {}
 
         new_partitions = [
-            # Add v to the target community and remove v from all other communities
+            # Add v to the target community and remove v from all other communities …
             # (removing v only from its previous community in practice.)
             (p | {v} if p == target else p - {v})
-            # for all sets p in this parition
+            # … p in this parition.
             for p in self
         ] + (
             [{v}] if target == {} else []
@@ -74,6 +74,23 @@ class Partition:
         """
         return self.sets.__iter__()
 
+    def as_set(self) -> Set[Set[T]]:
+        """
+        Returns a set of sets of nodes that represents the communities.
+
+        """
+        return freeze(self.sets)
+
+
+def freeze(set_list: List[Set[T]]) -> Set[Set[T]]:
+    """
+    Given a list of set, return a set of (frozen) sets representing those sets.
+
+    This function returns a set of *frozen* sets, as plain sets are not hashable
+    in python and thus cannot be contained in a set.
+    """
+    return set(map(lambda c: frozenset(c), set_list))
+
 
 class QualityMetric(ABC):
     """
@@ -90,27 +107,33 @@ class Modularity(QualityMetric):
     """
     Implementation of Modularity as a quality function.
     """
+    T = TypeVar("T")
 
     def __init__(self, γ: float = 0.25):
         self.γ = γ
 
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
-        communities = 𝓟.sets
+        node_degrees = dict(G.degree(weight=None))
+        two_m = sum(node_degrees.values())
 
-        degrees = dict(G.degree())
-        two_m = sum(degrees.values())
+        # For empty graphs (i.e. ones without edges, return NaN, as Modularity is not defined for such graphs, due to the division by `2*m`!)
+        if two_m == 0:
+            return float('NaN')
+
         norm = self.γ / two_m
 
-        def community_contribution(community):
-            # Calculate the contribution of nodes from the community `community`
-            # First, determine the number of edges within that community
-            e_c = len(nx.induced_subgraph(G, community).edges)
+        def community_summand(c: Set[T]):
+            # Calculate the summand representing the community `c`.
+            # First, determine the number of edges within that community:
+            e_c = len(nx.induced_subgraph(G, c).edges)
+            # Sum up the degrees of nodes in the community
+            degree_sum = sum(node_degrees[u] for u in c)
 
-            degree_sum = sum(degrees[u] for u in community)
+            # From this, calculate the contribution of community c:
+            return 2 * e_c - norm * degree_sum**2
 
-            return e_c - norm * degree_sum**2
-
-        return sum(map(community_contribution, communities)) / two_m
+        # Calculate the modularity by adding the summands for all communities and dividing by `2 * m`:
+        return sum(map(community_summand, 𝓟.sets)) / two_m
 
 
 class CPM(QualityMetric):
@@ -126,15 +149,18 @@ class CPM(QualityMetric):
 
         degrees = dict(G.degree())
 
-        def community_contribution(community):
-            # Calculate the contribution of nodes from the community `community`
-            # First, determine the number of edges within that community
-            n_c = len(community)
-            e_c = len(nx.induced_subgraph(G, community).edges)
+        def community_summand(c):
+            # Calculate the summand representing the community `c`.
+            # First, determine the number of edges within that community:
+            e_c = len(nx.induced_subgraph(G, c).edges)
+            # Also get the number of nodes in this community.
+            n_c = len(c)
 
+            # From this, calculate the contribution of community c:
             return e_c - self.γ * n_c * (n_c - 1) / 2
 
-        return sum(map(community_contribution, communities))
+        # Calculate the constant potts model by adding the summands for all communities:
+        return sum(map(community_summand, communities))
 
 
 def recursive_size(S: Union[List, object]) -> int:
