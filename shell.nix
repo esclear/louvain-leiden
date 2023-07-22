@@ -14,7 +14,7 @@ mypython = pkgs.python3.withPackages (ps: with ps; [
 in pkgs.mkShell {
   buildInputs = [
     mypython
-    ruff
+    pkgs.ruff pkgs.isort
     pkgs.pre-commit
   ];
   shellHook = ''

@@ -1,5 +1,6 @@
 """This module defines quality metrics and provides implementations of Modularity and the ConstantPotts Model."""
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import TypeVar
 

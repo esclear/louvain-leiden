@@ -7,7 +7,6 @@ from ..louvain import louvain
 from ..quality_metrics import CPM, Modularity
 from ..utils import freeze
 
-
 # Below are a few tests written for simple graphs (currently only ones for the (5,2) barbell graph),
 # where one possible / logical 
 

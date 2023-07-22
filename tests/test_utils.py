@@ -3,7 +3,7 @@ import pytest
 
 from ..leiden import leiden
 from ..louvain import louvain
-from ..utils import Partition, freeze, recursive_size, flat, flatₚ, argmax, aggregate_graph, singleton_partition
+from ..utils import Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size, singleton_partition
 
 
 def test_partition_creation():

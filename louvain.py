@@ -8,13 +8,7 @@ guaranteeing well-connected communities" by V.A. Traag, L. Waltman and N.J. van 
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import (
-    aggregate_graph,
-    argmax,
-    flatₚ,
-    Partition,
-    singleton_partition,
-)
+from .utils import Partition, aggregate_graph, argmax, flatₚ, singleton_partition
 
 
 def move_nodes(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition:

@@ -12,7 +12,6 @@ from typing import TypeVar
 from .quality_metrics import QualityMetric
 from .utils import Graph, Partition, aggregate_graph, argmax, flatₚ, recursive_size, singleton_partition
 
-
 T = TypeVar("T")
 
 def leiden(

@@ -7,7 +7,6 @@ from typing import Callable, TypeVar  # noqa: UP035 # recommends to import Calla
 from networkx import Graph, MultiGraph
 from networkx.algorithms.community import community_utils
 
-
 T = TypeVar("T")
 
 class Partition:
