@@ -19,7 +19,7 @@ def leiden(
     G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 2.0, γ: float = 3.0
 ) -> Partition:
     """
-    Implementation of the Leiden algorithm for community detection.
+    Perform the Leiden algorithm for community detection.
 
     Parameters
     ----------

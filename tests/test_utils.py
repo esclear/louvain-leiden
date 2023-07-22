@@ -53,7 +53,10 @@ def test_partition_moving():
 
 
 def test_freeze():
-    pass
+    assert freeze([]) == set()
+    assert freeze([set()]) == { frozenset(set()) }
+    assert freeze([{1, 2, 3}, {4, 5}, set()]) == { frozenset({1, 2, 3}), frozenset({4, 5}), frozenset() }
+    assert freeze([set(), set()]) == { frozenset(set()) }
 
 
 def test_recursive_size():
@@ -80,16 +83,45 @@ def test_flat():
 
 
 def test_flat_partition():
-    pass
+    raise NotImplementedError()
 
 
 def test_argmax():
-    pass
+    raise NotImplementedError()
 
 
 def test_aggregate_graph():
-    pass
+    G = nx.generators.classic.complete_graph(5)
+    communities = [{0}, {1, 2}, {3, 4}]
+    𝓟 = Partition(G, communities)
+
+    H = aggregate_graph(G, 𝓟)
+
+    # Short sanity check: We have three nodes, representing the three communities
+    # and as many edges as before (recall that the aggregate graph H is a multigraph!)
+    assert len(H.nodes()) == 3
+    assert len(H.edges()) == 10
+
+    # Verify that the nodes of the aggregate graph correspond to the communities
+    assert set(H.nodes()) == freeze(communities)
+    # Check that the inter-community-edges are correct
+    assert H.number_of_edges(frozenset({0}),    frozenset({1, 2})) == 2
+    assert H.number_of_edges(frozenset({0}),    frozenset({3, 4})) == 2
+    assert H.number_of_edges(frozenset({1, 2}), frozenset({3, 4})) == 4
+    # Also check that self-loops for the communities are correct
+    assert H.number_of_edges(frozenset({1, 2}), frozenset({1, 2})) == 1
+    assert H.number_of_edges(frozenset({3, 4}), frozenset({3, 4})) == 1
 
 
 def test_singleton_partition():
-    pass
+    E = nx.generators.empty_graph(0)
+    G = nx.generators.classic.complete_graph(5)
+    H = nx.generators.barbell_graph(5, 2)
+
+    𝓟 = singleton_partition(E)
+    𝓠 = singleton_partition(G)
+    𝓡 = singleton_partition(H)
+
+    assert 𝓟.as_set() == freeze([])
+    assert 𝓠.as_set() == freeze([{0}, {1}, {2}, {3}, {4}])
+    assert 𝓡.as_set() == freeze([ {i} for i in range(12) ])
