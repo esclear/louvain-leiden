@@ -5,7 +5,7 @@ mypython = pkgs.python3.withPackages (ps: with ps; [
     # Development (code formatting)
     black flake8
     # Testing
-    pytest
+    pytest pytest-cov
     # Package management
     virtualenv pip
     # Demonstration notebook
@@ -14,6 +14,7 @@ mypython = pkgs.python3.withPackages (ps: with ps; [
 in pkgs.mkShell {
   buildInputs = [
     mypython
+    ruff
     pkgs.pre-commit
   ];
   shellHook = ''

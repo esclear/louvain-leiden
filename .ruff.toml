@@ -1,0 +1,9 @@
+select = [ "E", "F", "D", "UP" ]
+
+# Increase the maximum line length to 120 characters.
+line-length = 120
+
+extend-exclude = ["tests"]
+
+[pydocstyle]
+convention = "pep257"

@@ -1,11 +1,19 @@
+"""
+Implementation of the Leiden algorithm for community detection.
+
+This implementation follows the outline provided in the supplementary material of the paper "From Louvain to Leiden:
+guaranteeing well-connected communities" by V.A. Traag, L. Waltman and N.J. van Eck.
+"""
+
 from math import exp
 from random import choices
-from typing import Set
+from typing import TypeVar
 
-from networkx import Graph
+from .quality_metrics import QualityMetric
+from .utils import Graph, Partition, aggregate_graph, argmax, flatₚ, recursive_size, singleton_partition
 
-from .utils import *
 
+T = TypeVar("T")
 
 def leiden(
     G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 2.0, γ: float = 3.0
@@ -33,25 +41,25 @@ def leiden(
         𝓟 = Partition(G, [{v for v in G.nodes}])
 
     # Remember the original graph
-    O = G
+    G_orig = G
     while True:
         𝓟 = move_nodes_fast(G, 𝓟, 𝓗)
 
         # When every community consists of a single node only, terminate,
         # returning the flat partition given by 𝓟
-        if len(𝓟.sets) == len(G.nodes):
-            return Partition(O, flatₚ(𝓟))
+        if 𝓟.size == len(G.nodes):
+            return Partition(G_orig, flatₚ(𝓟))
 
         𝓟ᵣ = refine_partition(G, 𝓟, 𝓗, θ, γ)
         # Create the aggregate graph of G based on 𝓟ᵣ …
         G = aggregate_graph(G, 𝓟ᵣ)
 
         # … but maintain partition 𝓟
-        𝓟 = Partition(G, [{v for v in G.nodes if v <= C} for C in P])
+        𝓟 = Partition(G, [{v for v in G.nodes if v <= C} for C in 𝓟])
 
 
 def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition:
-    # Create a queue of all nodes to visit them in random order.
+    # Create a queue to visit all nodes in random order.
     # Here, the randomness stems from the fact that in python sets are unordered.
     Q = set(G.nodes)
 
@@ -64,7 +72,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition
 
         # Find best community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, 𝓟.sets + [{}])
+        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, [*𝓟.communities, {}])
 
         # If we can achieve a strict improvement
         if 𝛥𝓗 > 0:
@@ -97,7 +105,7 @@ def refine_partition(
 
 
 def merge_nodes_subset(
-    G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float, S: Set[T]
+    G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float, S: set[T]
 ) -> Partition:
     R = {
         v
@@ -127,9 +135,7 @@ def merge_nodes_subset(
             # Communities with the improvement (𝛥𝓗) of moving v there
             communities = [(C, 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ) for C in 𝓣]
             # Only consider communities for which the quality function doesn't degrade, if v is moved there
-            communities = list(
-                filter(lambda C_𝛥𝓗: C_𝛥𝓗[1] >= 0, communities)
-            )
+            communities = list(filter(lambda C_𝛥𝓗: C_𝛥𝓗[1] >= 0, communities))
 
             weights = [exp(𝛥𝓗 / θ) for (C, 𝛥𝓗) in communities]
 

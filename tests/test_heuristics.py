@@ -4,6 +4,7 @@ from math import isnan
 
 from ..leiden import leiden
 from ..louvain import louvain
+from ..quality_metrics import CPM, Modularity
 from ..utils import *
 
 
@@ -63,7 +64,7 @@ def test_modularity_comparison_networkx():
     # so that the result stays consistent. Otherwise the calculated communities will change between runs!
     𝓠 = Partition(G, nx.community.louvain_communities(G, weight=None, resolution=1, seed=1))
     # The following function 
-    nxMod = lambda 𝓡: nx.community.modularity(G, 𝓡.sets, weight=None, resolution=1)
+    nxMod = lambda 𝓡: nx.community.modularity(G, 𝓡.as_set(), weight=None, resolution=1)
 
     # Save modularities calculated by our and NX' modularity functions of
     # partitions calculated by us and NetworkX
