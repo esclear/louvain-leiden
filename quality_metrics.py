@@ -49,7 +49,7 @@ class Modularity(QualityMetric):
             return 2 * e_c - norm * degree_sum**2
 
         # Calculate the modularity by adding the summands for all communities and dividing by `2 * m`:
-        return sum(map(community_summand, 𝓟.communities)) / two_m
+        return sum(map(community_summand, 𝓟)) / two_m
 
 
 class CPM(QualityMetric):
@@ -72,4 +72,4 @@ class CPM(QualityMetric):
             return e_c - self.γ * n_c * (n_c - 1) / 2
 
         # Calculate the constant potts model by adding the summands for all communities:
-        return sum(map(community_summand, 𝓟.communities))
+        return sum(map(community_summand, 𝓟))

@@ -72,7 +72,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition
 
         # Find best community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, [*𝓟.communities, {}])
+        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, [*𝓟, {}])
 
         # If we can achieve a strict improvement
         if 𝛥𝓗 > 0:
