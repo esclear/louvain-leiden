@@ -12,10 +12,20 @@ def test_partition_creation():
     H = nx.generators.barbell_graph(5, 2)
 
     # Check that we can create valid partitions for the graphs above
-    assert Partition(E, [{}]) is not None
-    assert Partition(G, [{0, 1, 2, 3, 4}]) is not None
-    assert Partition(G, [{0}, {1}, {2}, {3}, {4}]) is not None
-    assert Partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}]) is not None
+    𝓟 = Partition(E, [])
+    assert 𝓟 is not None
+    𝓠 = Partition(G, [{0, 1, 2, 3, 4}])
+    assert 𝓠 is not None
+    𝓡 = Partition(G, [{0}, {1}, {2}, {3}, {4}])
+    assert 𝓡 is not None
+    𝓢 = Partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
+    assert 𝓢 is not None
+
+    assert 𝓟.size == 0
+    assert 𝓠.size == 1
+    assert 𝓡.size == 5
+    assert 𝓢.size == 3
+
 
     # Now check that partition creation fails when given sets which don't form a partition of the graph's nodes:
     # Partition contains nodes not in the graph:
@@ -83,11 +93,51 @@ def test_flat():
 
 
 def test_flat_partition():
-    raise NotImplementedError()
+    # flatₚ is called on aggregate graphs, where every node of the aggregate graph represents (potentially arbitrarily nested) sets
+    # of nodes in the original graph.
+
+    # First, check with a simple graph
+    G = nx.generators.classic.complete_graph(10)
+
+    𝓟 = singleton_partition(G)  # singleton partition
+    𝓠 = Partition(G, [{ *G.nodes }])  # trivial partition (all nodes in one community)
+
+    # To compare properly, we use the freeze function, so that we can compare sets, where the order doesn't matter.
+    assert freeze(flatₚ(𝓟)) == freeze([{i} for i in range(10)])
+    assert freeze(flatₚ(𝓠)) == freeze([{i for i in range(10)}])
+
+    # Calculate an aggregate graph by repeatedly merging:
+    𝓡 = Partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])
+    H = aggregate_graph(G, 𝓡)
+
+    𝓢 = Partition(H, [
+        { frozenset({0, 1, 2}), frozenset({3, 4}) },
+        { frozenset({5, 6}) },
+        { frozenset({7, 8}), frozenset({9}) }
+    ])
+
+    𝓣 = Partition(H, S)
+
+    assert freeze(flatₚ(𝓣)) == freeze([ {0, 1, 2, 3, 4} , {5, 6}, {7, 8, 9}])
 
 
 def test_argmax():
-    raise NotImplementedError()
+    assert argmax(lambda x: x, None) is None
+    assert argmax(lambda x: x, []) is None
+    assert argmax(lambda x: x, set()) is None
+
+    # argmax returns tuples of the form (arg, value, index)
+    # check that for constant arguments and values the first index (0) is chosen:
+    assert argmax(lambda x: 42, [10 for i in range(10)]) == (10, 42, 0)
+    # check that for variable arguments but constant values the first index (0) is chosen: 
+    assert argmax(lambda x: 42, [10 + i for i in range(10)]) == (10, 42, 0)
+    # check that the calculations are carried out properly
+    #   -> at indices 0..9 we have the inputs 10..19 and the values 30..39
+    assert argmax(lambda x: 20 + x, [10 + i for i in range(10)]) == (19, 39, 9)
+    #   -> at indices 0..9 we have the inputs 10..19 and the values 40..31
+    assert argmax(lambda x: 30 - x, [10 + i for i in range(10)]) == (10, 20, 0)
+    # check that finding a minimum in the middle of the list works as well and the first occurrence is returned
+    assert argmax(lambda x: x, [0, 1, 3, 8, 5, 8, 6]) == (8, 8, 3)
 
 
 def test_aggregate_graph():

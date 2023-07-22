@@ -115,9 +115,9 @@ def flat(S: set | object) -> set:
     return reduce(lambda a, s: a | s, (flat(s) for s in S), set())
 
 
-def flatₚ(𝓟: Partition) -> list:
+def flatₚ(𝓟: Partition) -> list[set[T]]:
     """
-    Flatten a partition into a list of communities (each of which represented as a set).
+    Flatten a partition into a *list* of communities (each of which represented as a set).
 
     This is used for partitions of aggregate graphs, where multiple nodes have been
     coalesced into one single node, which is represented by the set of the original nodes.
@@ -142,7 +142,7 @@ def argmax(
     opt = parameters[idx]
     val = objective_function(opt)
 
-    # find the maximum by iterating over the remaining indices (beginning at 1)
+    # find the maximum by iterating over the remaining indices (beginning at index 1)
     for k in range(1, len(parameters)):
         optₖ = parameters[k]
         valₖ = objective_function(optₖ)
