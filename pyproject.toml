@@ -1,0 +1,29 @@
+[tool.ruff]
+
+select = [ "E", "F", "D", "UP" ]
+
+# Increase the maximum line length to 120 characters.
+line-length = 120
+
+extend-exclude = ["tests"]
+
+[tool.ruff.pydocstyle]
+convention = "pep257"
+
+
+[tool.coverage.run]
+omit = [
+    # Omit tests
+    "./tests",
+    # Omit system-wide libraries
+    "/nix/*",
+    "/usr/*",
+    "/lib/*"
+]
+
+
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+    "@(abc\\.)?abstractmethod",
+]
