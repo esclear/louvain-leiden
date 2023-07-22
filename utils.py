@@ -81,7 +81,11 @@ class Partition:
 
     @property
     def communities(self):
-        """Return the communities in this partition as a tuple."""
+        """
+        Return the communities in this partition as a tuple.
+
+        The order is of no importance; we're using tuples as an immutable representation of a set / list.
+        """
         return tuple(self._sets)
 
 
