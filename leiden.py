@@ -58,8 +58,9 @@ def leiden(
 
 
 def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition:
+    """Perform node moves to communities as long as the quality metric can be improved by moving."""
     # Create a queue to visit all nodes in random order.
-    # Here, the randomness stems from the fact that in python sets are unordered.
+    # Here, the randomness stems from the fact that sets are unordered in python.
     Q = set(G.nodes)
 
     while True:
@@ -92,6 +93,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition
 def refine_partition(
     G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float
 ) -> Partition:
+    """Refine all communities by merging repeatedly, starting from a singleton partition."""
     # Assign each node to its own community
     𝓟ᵣ = singleton_partition(G)
 
@@ -107,10 +109,8 @@ def merge_nodes_subset(
     G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float, S: set[T]
 ) -> Partition:
     R = {
-        v
-        for v in S
-        if len(G.edges(v, frozenset(S - {v})))
-        >= γ * recursive_size(v) * (recursive_size(S) - recursive_size(v))
+        v for v in S
+          if len(G.edges(v, frozenset(S - {v}))) >= γ * recursive_size(v) * (recursive_size(S) - recursive_size(v))
     }
 
     for v in R:
