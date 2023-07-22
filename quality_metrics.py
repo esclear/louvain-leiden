@@ -2,14 +2,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 import networkx as nx
 
 from .utils import Graph, Partition
 
+T = TypeVar("T")
 
-class QualityMetric(ABC):
+class QualityMetric(ABC, Generic[T]):
     """A metric that, when called, measures the quality of a partition into communities."""
 
     @classmethod
@@ -19,10 +20,8 @@ class QualityMetric(ABC):
         raise NotImplementedError()
 
 
-class Modularity(QualityMetric):
+class Modularity(QualityMetric, Generic[T]):
     """Implementation of Modularity as a quality function."""
-
-    T = TypeVar("T")
 
     def __init__(self, γ: float = 0.25):
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
@@ -53,7 +52,7 @@ class Modularity(QualityMetric):
         return sum(map(community_summand, 𝓟)) / two_m
 
 
-class CPM(QualityMetric):
+class CPM(QualityMetric, Generic[T]):
     """Implementation of the Constant Potts Model (CPM) as a quality function."""
 
     def __init__(self, γ: float = 0.25):
