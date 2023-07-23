@@ -45,7 +45,7 @@ def leiden(G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 2.
 
         # When every community consists of a single node only, terminate,
         # returning the flat partition given by 𝓟
-        if 𝓟.size == len(G.nodes):
+        if len(𝓟) == len(G.nodes):
             return Partition(G_orig, flatₚ(𝓟))
 
         𝓟ᵣ = refine_partition(G, 𝓟, 𝓗, θ, γ)

@@ -25,10 +25,10 @@ def test_partition_creation():
     assert 𝓢 is not None
     assert 𝓢.communities == ({0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11})
 
-    assert 𝓟.size == 0
-    assert 𝓠.size == 1
-    assert 𝓡.size == 5
-    assert 𝓢.size == 3
+    assert len(𝓟) == 0
+    assert len(𝓠) == 1
+    assert len(𝓡) == 5
+    assert len(𝓢) == 3
 
     # Now check that partition creation fails when given sets which don't form a partition of the graph's nodes:
     # Partition contains nodes not in the graph:

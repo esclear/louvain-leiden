@@ -72,8 +72,7 @@ class Partition:
         """Return a set of sets of nodes that represents the communities."""
         return freeze(self._sets)
 
-    @property
-    def size(self):
+    def __len__(self):
         """Gets the size (number of communities) of the partition."""
         return len(self._sets)
 
