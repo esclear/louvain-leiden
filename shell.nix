@@ -15,7 +15,6 @@ in pkgs.mkShell {
   buildInputs = [
     mypython
     pkgs.ruff pkgs.isort
-    pkgs.pre-commit
   ];
   shellHook = ''
         alias pip="PIP_PREFIX='$(pwd)/_build/pip_packages' \pip"
