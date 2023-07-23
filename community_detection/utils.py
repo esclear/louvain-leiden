@@ -9,6 +9,7 @@ from networkx.algorithms.community import community_utils
 
 T = TypeVar("T")
 
+
 class Partition:
     """This class represents a partition of a graph's nodes."""
 
@@ -29,9 +30,7 @@ class Partition:
 
         # For faster moving of nodes, store for each node the community it belongs to
         # The result is a dict that maps a node to its community (a set of nodes, containing that node).
-        self._node_part = {
-            v: c for c in P for v in c
-        }  # the order is a bit unintuitive in python
+        self._node_part = {v: c for c in P for v in c}  # nested comprehensions are a bit unintuitive in python
 
     @staticmethod
     def is_partition(G: Graph, 𝓟: list[set[T]]) -> bool:
@@ -128,9 +127,7 @@ def flatₚ(𝓟: Partition) -> list[set[T]]:
     return [flat(C) for C in 𝓟]
 
 
-def argmax(
-    objective_function: Callable[[T], float], parameters: list[T]
-) -> tuple[T, float, int] | None:
+def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tuple[T, float, int] | None:
     """
     Find the arg max with respect to a given objective function over a given list of parameters.
 
@@ -169,7 +166,7 @@ def aggregate_graph(G: Graph, 𝓟: Partition) -> MultiGraph:
     H = MultiGraph()
     H.add_nodes_from([frozenset(c) for c in 𝓟])
 
-    for (u, v) in G.edges():
+    for u, v in G.edges():
         C = frozenset(𝓟.node_community(u))
         D = frozenset(𝓟.node_community(v))
 

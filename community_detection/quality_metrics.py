@@ -10,6 +10,7 @@ from .utils import Graph, Partition
 
 T = TypeVar("T")
 
+
 class QualityMetric(ABC, Generic[T]):
     """A metric that, when called, measures the quality of a partition into communities."""
 
@@ -61,6 +62,7 @@ class CPM(QualityMetric, Generic[T]):
 
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
+
         def community_summand(c: set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the number of edges within that community:

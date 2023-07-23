@@ -132,7 +132,7 @@ def test_argmax():
     # argmax returns tuples of the form (arg, value, index)
     # check that for constant arguments and values the first index (0) is chosen:
     assert argmax(lambda x: 42, [10 for i in range(10)]) == (10, 42, 0)
-    # check that for variable arguments but constant values the first index (0) is chosen: 
+    # check that for variable arguments but constant values the first index (0) is chosen:
     assert argmax(lambda x: 42, [10 + i for i in range(10)]) == (10, 42, 0)
     # check that the calculations are carried out properly
     #   -> at indices 0..9 we have the inputs 10..19 and the values 30..39
@@ -177,4 +177,4 @@ def test_singleton_partition():
 
     assert 𝓟.as_set() == freeze([])
     assert 𝓠.as_set() == freeze([{0}, {1}, {2}, {3}, {4}])
-    assert 𝓡.as_set() == freeze([ {i} for i in range(12) ])
+    assert 𝓡.as_set() == freeze([{i} for i in range(12)])

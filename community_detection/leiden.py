@@ -14,9 +14,8 @@ from .utils import Graph, Partition, aggregate_graph, argmax, flatₚ, recursive
 
 T = TypeVar("T")
 
-def leiden(
-    G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 2.0, γ: float = 3.0
-) -> Partition:
+
+def leiden(G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 2.0, γ: float = 3.0) -> Partition:
     """
     Perform the Leiden algorithm for community detection.
 
@@ -90,9 +89,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition
             return 𝓟
 
 
-def refine_partition(
-    G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float
-) -> Partition:
+def refine_partition(G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float) -> Partition:
     """Refine all communities by merging repeatedly, starting from a singleton partition."""
     # Assign each node to its own community
     𝓟ᵣ = singleton_partition(G)
@@ -105,9 +102,7 @@ def refine_partition(
     return 𝓟ᵣ
 
 
-def merge_nodes_subset(
-    G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float, S: set[T]
-) -> Partition:
+def merge_nodes_subset(G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float, S: set[T]) -> Partition:
     R = {
         v for v in S
           if len(G.edges(v, frozenset(S - {v}))) >= γ * recursive_size(v) * (recursive_size(S) - recursive_size(v))
@@ -121,8 +116,7 @@ def merge_nodes_subset(
                 frozenset(C)
                 for C in 𝓟
                 if C <= S
-                and len(G.edges(C, frozenset(S - C)))
-                >= γ * recursive_size(C) * (recursive_size(S) - recursive_size(C))
+                and len(G.edges(C, frozenset(S - C))) >= γ * recursive_size(C) * (recursive_size(S) - recursive_size(C))
             }
 
             # Now, choose a random community to put v into
