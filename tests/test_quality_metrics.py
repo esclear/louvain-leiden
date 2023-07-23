@@ -2,10 +2,10 @@ from math import isnan
 
 import networkx as nx
 
-from ..leiden import leiden
-from ..louvain import louvain
-from ..quality_metrics import CPM, Modularity
-from ..utils import *
+from community_detection.leiden import leiden
+from community_detection.louvain import louvain
+from community_detection.quality_metrics import CPM, Modularity
+from community_detection.utils import *
 
 PRECISION = 1e-15
 

@@ -1,9 +1,9 @@
 import networkx as nx
 import pytest
 
-from ..leiden import leiden
-from ..louvain import louvain
-from ..utils import Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size, singleton_partition
+from community_detection.leiden import leiden
+from community_detection.louvain import louvain
+from community_detection.utils import Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size, singleton_partition
 
 
 def test_partition_creation():

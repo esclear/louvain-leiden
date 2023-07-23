@@ -1,32 +1,43 @@
-[tool.ruff]
+[project]
+name = "community_detection"
+version = "20230823!0.1.0"
+description = "An implementation of the Louvain and Leiden community detection algorithms for NetworkX."
 
-select = [ "E", "F", "D", "UP" ]
+license = {text = "European Union Public License 1.2"}
+requires-python = ">=3.9"
+authors = [ {name = "Daniel Albert", email = "git+community-detection+252b9@esclear.de"} ]
 
-# Increase the maximum line length to 120 characters.
+[tool.black]
 line-length = 120
-
-extend-exclude = ["tests"]
-
-[tool.ruff.pydocstyle]
-convention = "pep257"
+target-version = ["py39", "py310"]
+skip-string-normalization = true
 
 
 [tool.coverage.run]
 omit = [
     # Omit tests
-    "./tests",
+    "tests/*",
     # Omit system-wide libraries
     "/nix/*",
     "/usr/*",
     "/lib/*"
 ]
 
-
 [tool.coverage.report]
 exclude_also = [
     "raise NotImplementedError",
     "@(abc\\.)?abstractmethod",
 ]
+
+
+[tool.ruff]
+line-length = 120
+select = [ "E", "F", "D", "UP" ]
+
+extend-exclude = ["tests"]
+
+[tool.ruff.pydocstyle]
+convention = "pep257"
 
 
 [tool.isort]

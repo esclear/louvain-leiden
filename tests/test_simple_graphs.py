@@ -2,10 +2,10 @@
 
 import networkx as nx
 
-from ..leiden import leiden
-from ..louvain import louvain
-from ..quality_metrics import CPM, Modularity
-from ..utils import freeze
+from community_detection.leiden import leiden
+from community_detection.louvain import louvain
+from community_detection.quality_metrics import CPM, Modularity
+from community_detection.utils import freeze
 
 # Below are a few tests written for simple graphs (currently only ones for the (5,2) barbell graph),
 # where one possible / logical 
