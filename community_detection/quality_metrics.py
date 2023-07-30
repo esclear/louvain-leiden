@@ -39,12 +39,12 @@ class Modularity(QualityMetric, Generic[T]):
 
         norm = self.γ / two_m
 
-        def community_summand(c: set[T]) -> float:
+        def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the number of edges within that community:
-            e_c = len(nx.induced_subgraph(G, c).edges)
+            e_c = len(nx.induced_subgraph(G, C).edges)
             # Sum up the degrees of nodes in the community
-            degree_sum = sum(node_degrees[u] for u in c)
+            degree_sum = sum(node_degrees[u] for u in C)
 
             # From this, calculate the contribution of community c:
             return 2 * e_c - norm * degree_sum**2
@@ -63,15 +63,15 @@ class CPM(QualityMetric, Generic[T]):
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
 
-        def community_summand(c: set[T]) -> float:
+        def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the number of edges within that community:
-            e_c = len(nx.induced_subgraph(G, c).edges)
+            e_c = len(nx.induced_subgraph(G, C).edges)
             # Also get the number of nodes in this community.
-            n_c = len(c)
+            n_c = len(C)
 
             # From this, calculate the contribution of community c:
-            return e_c - self.γ * n_c * (n_c - 1) / 2
+            return e_c - self.γ * (n_c * (n_c - 1) / 2)
 
         # Calculate the constant potts model by adding the summands for all communities:
         return sum(map(community_summand, 𝓟))
