@@ -8,8 +8,8 @@ mypython = pkgs.python3.withPackages (ps: with ps; [
     pytest pytest-cov
     # Package management
     virtualenv pip
-    # Demonstration notebook
-    jupyter_core notebook matplotlib
+    # Demonstration notebooks
+    jupyter_core notebook matplotlib pandas
   ]);
 in pkgs.mkShell {
   buildInputs = [
