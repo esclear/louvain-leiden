@@ -64,17 +64,16 @@ class Partition:
 
     def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition:
         """Move node v from its current community in this partition to the given target community."""
-        # Sanity check: the target community is indeed a community in this partition
-        assert target in self._sets or target == set()
-
-        new_partitions = [
+        # We don't want to create a new singleton set in every iteration below
+        v_singleton = {v}
+        new_partitions: list[set[T]] = [
             # Add v to the target community and remove v from all other communities …
             # (removing v only from its previous community in practice.)
-            (p | {v} if p == target else p - {v})
+            (p | v_singleton if p == target else p - v_singleton)
             # … p in this parition.
             for p in self
         ] + (
-            [{v}] if target == set() else []
+            [v_singleton] if target == set() else []
         )  # If the target is an empty set, also include v, otherwise don't
 
         # And remove empty sets from the partition

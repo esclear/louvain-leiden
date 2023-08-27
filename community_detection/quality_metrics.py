@@ -14,7 +14,6 @@ T = TypeVar("T")
 class QualityMetric(ABC, Generic[T]):
     """A metric that, when called, measures the quality of a partition into communities."""
 
-    @classmethod
     @abstractmethod
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         """Measure the quality of the given partition as applied to the graph provided."""
@@ -28,7 +27,6 @@ class Modularity(QualityMetric[T], Generic[T]):
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
         self.γ = γ
 
-    @classmethod
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
         node_degrees = dict(G.degree(weight=None))
@@ -61,7 +59,6 @@ class CPM(QualityMetric[T], Generic[T]):
         """Create a new instance of the Constant Potts Model with the given resolution parameter γ."""
         self.γ = γ
 
-    @classmethod
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
 

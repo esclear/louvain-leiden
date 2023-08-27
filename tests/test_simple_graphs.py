@@ -8,9 +8,10 @@ from community_detection.quality_metrics import CPM, Modularity
 from community_detection.utils import freeze
 
 # Below are a few tests written for simple graphs (currently only ones for the (5,2) barbell graph),
-# where one possible / logical 
+# which are small enough for the results to be deterministic and traceable by a human.
 
 BARBELL_PARTS = freeze([{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
+
 
 def test_louvain_barbell_modularity():
     """

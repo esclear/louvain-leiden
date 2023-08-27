@@ -74,7 +74,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T]) -> Partit
 
         # Find best community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, [*𝓟, {}])
+        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, [*𝓟, set()])
 
         # If we can achieve a strict improvement
         if 𝛥𝓗 > 0:
@@ -107,7 +107,8 @@ def refine_partition(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T], θ: floa
 
 def merge_nodes_subset(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition:
     def E(C, D) -> int:
-        """Calculate |{ (u,v) ∈ E(G) | u ∈ C, v ∈ D }|."""
+        """Calculate |{ (u,v) ∈ E(G) | u ∈ C, v ∈ D }|."""  # noqa: D402 # disable warning that dislikes 'E' here
+        # edge_boundary (from NetworkX) calculates a C-D-cut, i.e. all edges starting in C and ending in D
         return sum(1 for _ in edge_boundary(G, C, D))
 
     R = {

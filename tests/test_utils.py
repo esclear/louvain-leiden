@@ -14,6 +14,8 @@ from community_detection.utils import (
     singleton_partition,
 )
 
+# Don't let black destroy the manual formatting in this document:
+# fmt: off
 
 def test_partition_creation():
     E = nx.generators.empty_graph(0)
@@ -24,12 +26,15 @@ def test_partition_creation():
     𝓟 = Partition(E, [])
     assert 𝓟 is not None
     assert 𝓟.communities == ()
+
     𝓠 = Partition(G, [{0, 1, 2, 3, 4}])
     assert 𝓠 is not None
     assert 𝓠.communities == ({0, 1, 2, 3, 4},)
+
     𝓡 = Partition(G, [{0}, {1}, {2}, {3}, {4}])
     assert 𝓡 is not None
     assert 𝓡.communities == ({0}, {1}, {2}, {3}, {4})
+
     𝓢 = Partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
     assert 𝓢 is not None
     assert 𝓢.communities == ({0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11})
@@ -56,7 +61,7 @@ def test_partition_moving():
     P = [{0, 1, 2, 3}, {4}]
 
     𝓟 = Partition(G, P)              # Start with the partition indicated in P and do each of the following:
-    𝓠 = 𝓟.move_node(0, {})           # a) Move node 0 to its own community (i.e. nothing should change)
+    𝓠 = 𝓟.move_node(0, set())        # a) Move node 0 to its own community (i.e. nothing should change)
     𝓡 = 𝓟.move_node(0, {4})          # b) Move node 0 to the community which contains node 4
     𝓢 = 𝓟.move_node(4, {0, 1, 2, 3}) # c) Move node 0 to the community containing all other nodes
 

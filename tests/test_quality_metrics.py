@@ -9,6 +9,8 @@ from community_detection.utils import *
 
 PRECISION = 1e-15
 
+# Don't let black destroy the manual formatting in this document:
+# fmt: off
 
 def test_modularity_trivial_values():
     """
