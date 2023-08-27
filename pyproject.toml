@@ -40,6 +40,16 @@ extend-exclude = ["tests"]
 convention = "pep257"
 
 
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+
+# There is no proper typing stub of the networkx library
+[[tool.mypy.overrides]]
+module = [ "networkx", "networkx.algorithms.community" ]
+ignore_missing_imports = true
+
+
 [tool.isort]
 line_length = 120
 multi_line_output = 3

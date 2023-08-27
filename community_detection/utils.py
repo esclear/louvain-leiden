@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 from functools import reduce
-from typing import Callable, TypeVar  # noqa: UP035 # recommends to import Callable from collections.abc instead
+from typing import Callable, Iterator, Sequence, TypeVar  # noqa: UP035 # recommends to import Callable from collections.abc instead
 
 from networkx import Graph, MultiGraph
 from networkx.algorithms.community import community_utils
 
 T = TypeVar("T")
 
+__all__ = ['Partition', 'Graph', 'MultiGraph', 'freeze', 'recursive_size', 'flat', 'flatₚ', 'argmax', 'aggregate_graph', 'singleton_partition']
 
 class Partition:
     """This class represents a partition of a graph's nodes."""
@@ -38,12 +39,13 @@ class Partition:
         # There used to be a custom implementation here, which turned out to be similar to Networkx' implementation.
         # Since I expect Networkx' implementation to be as optimized as possible and since this is only used as a
         # sanity check in the constructor, I decided to let the experts handle this.
-        return community_utils.is_partition(G, 𝓟)
+        result: bool = community_utils.is_partition(G, 𝓟)
+        return result
 
-    def move_node(self, v: T, target: set[T]) -> Partition:
+    def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition:
         """Move node v from its current community in this partition to the given target community."""
         # Sanity check: the target community is indeed a community in this partition
-        assert target in self._sets or target == {}
+        assert target in self._sets or target == set()
 
         new_partitions = [
             # Add v to the target community and remove v from all other communities …
@@ -52,7 +54,7 @@ class Partition:
             # … p in this parition.
             for p in self
         ] + (
-            [{v}] if target == {} else []
+            [{v}] if target == set() else []
         )  # If the target is an empty set, also include v, otherwise don't
 
         # And remove empty sets from the partition
@@ -64,20 +66,20 @@ class Partition:
         """Get the community the node v is currently part of."""
         return self._node_part[v]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[set[T]]:
         """Make a Partition object iterable, returning an iterator over the communities."""
         return self._sets.__iter__()
 
-    def as_set(self) -> set[set[T]]:
+    def as_set(self) -> set[frozenset[T]]:
         """Return a set of sets of nodes that represents the communities."""
         return freeze(self._sets)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Gets the size (number of communities) of the partition."""
         return len(self._sets)
 
     @property
-    def communities(self):
+    def communities(self) -> tuple[set[T], ...]:
         """
         Return the communities in this partition as a tuple.
 
@@ -86,7 +88,7 @@ class Partition:
         return tuple(self._sets)
 
 
-def freeze(set_list: list[set[T]]) -> set[set[T]]:
+def freeze(set_list: Sequence[set[T] | frozenset[T]]) -> set[frozenset[T]]:
     """
     Given a list of set, return a set of (frozen) sets representing those sets.
 
@@ -96,7 +98,7 @@ def freeze(set_list: list[set[T]]) -> set[set[T]]:
     return set(map(lambda c: frozenset(c), set_list))
 
 
-def recursive_size(S: list | object) -> int:
+def recursive_size(S: list[T] | object) -> int:
     """Return the recursive size of the set S."""
     if not isinstance(S, list):
         return 1
@@ -104,7 +106,7 @@ def recursive_size(S: list | object) -> int:
     return sum(recursive_size(s) for s in S)
 
 
-def flat(S: set | object) -> set:
+def flat(S: frozenset[T] | set[T] | T) -> set[T]:
     """Flatten potentially nested sets into a flattened (non-nested) set."""
     # "unfreeze" frozen sets
     if isinstance(S, frozenset):

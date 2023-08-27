@@ -17,7 +17,7 @@ from .utils import Graph, Partition, aggregate_graph, argmax, flatₚ, freeze, r
 T = TypeVar("T")
 
 
-def leiden(G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 0.05, γ: float = 1.0) -> Partition:
+def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition | None = None, θ: float = 0.05, γ: float = 1.0) -> Partition:
     """
     Perform the Leiden algorithm for community detection.
 
@@ -25,7 +25,7 @@ def leiden(G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 0.
     ----------
     G : Graph
         The graph / network to process
-    𝓗 : QualityMetric
+    𝓗 : QualityMetric[T]
         A quality metric to optimize
     𝓟 : Partition, optional
         A partition to refine, leave at the default of `None` when not refining an existing partition.
@@ -59,7 +59,7 @@ def leiden(G: Graph, 𝓗: QualityMetric, 𝓟: Partition = None, θ: float = 0.
         𝓟 = Partition(G, [{v for v in G.nodes if v <= C} for C in 𝓟])
 
 
-def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition:
+def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T]) -> Partition:
     """Perform fast local node moves to communities as long as the quality metric can be improved by moving."""
     # Create a queue to visit all nodes in random order.
     # Here, the randomness stems from the fact that sets are unordered in python.
@@ -92,7 +92,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric) -> Partition
             return 𝓟
 
 
-def refine_partition(G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float) -> Partition:
+def refine_partition(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T], θ: float, γ: float) -> Partition:
     """Refine all communities by merging repeatedly, starting from a singleton partition."""
     # Assign each node to its own community
     𝓟ᵣ = singleton_partition(G)
@@ -105,7 +105,7 @@ def refine_partition(G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, 
     return 𝓟ᵣ
 
 
-def merge_nodes_subset(G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float, γ: float, S: set[T]) -> Partition:
+def merge_nodes_subset(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition:
     def E(C, D) -> int:
         """Calculate |{ (u,v) ∈ E(G) | u ∈ C, v ∈ D }|."""
         return sum(1 for _ in edge_boundary(G, C, D))
@@ -121,7 +121,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition, 𝓗: QualityMetric, θ: float
             # Consider only well-connected communities
             𝓣 = freeze([
                 C for C in 𝓟
-                  if C <= S and E(C, S - C) >= γ * recursive_size(C) * (recursive_size(S) - recursive_size(C))
+                  if C <= S and E(C, S - C) >= γ * float(recursive_size(C) * (recursive_size(S) - recursive_size(C)))
             ])
 
             # Now, choose a random community to put v into

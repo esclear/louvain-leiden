@@ -21,13 +21,14 @@ class QualityMetric(ABC, Generic[T]):
         raise NotImplementedError()
 
 
-class Modularity(QualityMetric, Generic[T]):
+class Modularity(QualityMetric[T], Generic[T]):
     """Implementation of Modularity as a quality function."""
 
     def __init__(self, γ: float = 0.25):
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
         self.γ = γ
 
+    @classmethod
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
         node_degrees = dict(G.degree(weight=None))
@@ -37,14 +38,14 @@ class Modularity(QualityMetric, Generic[T]):
         if two_m == 0:
             return float('NaN')
 
-        norm = self.γ / two_m
+        norm: float = self.γ / two_m
 
-        def community_summand(C: set[T]) -> float:
+        def community_summand(C: frozenset[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the number of edges within that community:
-            e_c = len(nx.induced_subgraph(G, C).edges)
+            e_c: int = len(nx.induced_subgraph(G, C).edges)
             # Sum up the degrees of nodes in the community
-            degree_sum = sum(node_degrees[u] for u in C)
+            degree_sum: int = sum(node_degrees[u] for u in C)
 
             # From this, calculate the contribution of community c:
             return 2 * e_c - norm * degree_sum**2
@@ -53,17 +54,18 @@ class Modularity(QualityMetric, Generic[T]):
         return sum(map(community_summand, 𝓟)) / two_m
 
 
-class CPM(QualityMetric, Generic[T]):
+class CPM(QualityMetric[T], Generic[T]):
     """Implementation of the Constant Potts Model (CPM) as a quality function."""
 
     def __init__(self, γ: float = 0.25):
         """Create a new instance of the Constant Potts Model with the given resolution parameter γ."""
         self.γ = γ
 
+    @classmethod
     def __call__(self, G: Graph, 𝓟: Partition) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
 
-        def community_summand(C: set[T]) -> float:
+        def community_summand(C: frozenset[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the number of edges within that community:
             e_c = len(nx.induced_subgraph(G, C).edges)

@@ -14,7 +14,8 @@ mypython = pkgs.python3.withPackages (ps: with ps; [
 in pkgs.mkShell {
   buildInputs = [
     mypython
-    pkgs.ruff pkgs.isort
+    pkgs.ruff pkgs.isort pkgs.mypy
+    pkgs.memray
   ];
   shellHook = ''
         alias pip="PIP_PREFIX='$(pwd)/_build/pip_packages' \pip"
