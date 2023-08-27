@@ -8,7 +8,7 @@ requires-python = ">=3.9"
 authors = [ {name = "Daniel Albert", email = "git+community-detection+252b9@esclear.de"} ]
 
 [tool.black]
-line-length = 120
+line-length = 140
 target-version = ["py39", "py310"]
 skip-string-normalization = true
 
@@ -31,7 +31,7 @@ exclude_also = [
 
 
 [tool.ruff]
-line-length = 120
+line-length = 140
 select = [ "E", "F", "D", "UP" ]
 
 extend-exclude = ["tests"]
@@ -51,7 +51,7 @@ ignore_missing_imports = true
 
 
 [tool.isort]
-line_length = 120
+line_length = 140
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0

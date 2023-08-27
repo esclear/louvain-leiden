@@ -2,14 +2,34 @@
 from __future__ import annotations
 
 from functools import reduce
-from typing import Callable, Iterator, Sequence, TypeVar  # noqa: UP035 # recommends to import Callable from collections.abc instead
+from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
+    cast,
+    Callable,
+    Generic,
+    Iterable,
+    Iterator,
+    Sequence,
+    TypeVar,
+)
 
 from networkx import Graph, MultiGraph
 from networkx.algorithms.community import community_utils
 
+__all__ = [
+    'Partition',
+    'Graph',
+    'MultiGraph',
+    'freeze',
+    'recursive_size',
+    'flat',
+    'flatₚ',
+    'argmax',
+    'aggregate_graph',
+    'singleton_partition',
+]
+
 T = TypeVar("T")
 
-__all__ = ['Partition', 'Graph', 'MultiGraph', 'freeze', 'recursive_size', 'flat', 'flatₚ', 'argmax', 'aggregate_graph', 'singleton_partition']
 
 class Partition:
     """This class represents a partition of a graph's nodes."""
@@ -75,7 +95,7 @@ class Partition:
         return freeze(self._sets)
 
     def __len__(self) -> int:
-        """Gets the size (number of communities) of the partition."""
+        """Get the size (number of communities) of the partition."""
         return len(self._sets)
 
     @property
