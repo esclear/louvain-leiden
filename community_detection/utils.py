@@ -4,9 +4,11 @@ from __future__ import annotations
 from functools import reduce
 from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
     Callable,
+    cast,
     Generic,
     Iterator,
-    Sequence,
+    Iterable,
+    TypeAlias,
     TypeVar,
 )
 
@@ -16,6 +18,7 @@ from networkx.algorithms.community import community_utils
 
 T = TypeVar("T")
 
+Nested: TypeAlias = T | Iterable['Nested[T]']
 
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
@@ -91,7 +94,7 @@ class Partition(Generic[T]):
         return tuple(self._sets)
 
 
-def freeze(set_list: Sequence[set[T] | frozenset[T]]) -> set[frozenset[T]]:
+def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
     """
     Given a list of set, return a set of (frozen) sets representing those sets.
 
@@ -101,24 +104,25 @@ def freeze(set_list: Sequence[set[T] | frozenset[T]]) -> set[frozenset[T]]:
     return set(map(lambda c: frozenset(c), set_list))
 
 
-def recursive_size(S: list[T] | object) -> int:
+def recursive_size(S: Nested[T]) -> int:
     """Return the recursive size of the set S."""
-    if not isinstance(S, list):
-        return 1
+    if isinstance(S, list):
+        return sum(recursive_size(s) for s in cast(list[Nested[T]], S))
 
-    return sum(recursive_size(s) for s in S)
+    return 1
 
 
-def flat(S: frozenset[T] | set[T] | T) -> set[T]:
+def flat(S: Nested[T]) -> set[T]:
     """Flatten potentially nested sets into a flattened (non-nested) set."""
     # "unfreeze" frozen sets
     if isinstance(S, frozenset):
-        S = set(S)
+        S = cast(Nested[T], set(S))
 
-    if not isinstance(S, set):
-        return {S}
+    if isinstance(S, Iterable):
+        return reduce(lambda a, s: a | s, (flat(s) for s in S), set())
 
-    return reduce(lambda a, s: a | s, (flat(s) for s in S), set())
+    return { S }
+
 
 
 def flatₚ(𝓟: Partition[T]) -> list[set[T]]:

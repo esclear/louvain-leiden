@@ -9,7 +9,7 @@ mypython = pkgs.python3.withPackages (ps: with ps; [
     # Package management
     virtualenv pip
     # Demonstration notebooks
-    jupyter_core notebook matplotlib pandas
+    jupyter_core notebook matplotlib pandas pygraphviz
   ]);
 in pkgs.mkShell {
   buildInputs = [

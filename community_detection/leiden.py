@@ -9,10 +9,10 @@ from math import exp
 from random import choices
 from typing import TypeVar
 
-from networkx import edge_boundary
+from networkx import edge_boundary, Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Graph, Partition, aggregate_graph, argmax, flatₚ, freeze, recursive_size, singleton_partition
+from .utils import Partition, aggregate_graph, argmax, flatₚ, freeze, recursive_size, singleton_partition
 
 T = TypeVar("T")
 

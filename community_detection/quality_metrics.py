@@ -5,8 +5,9 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
 import networkx as nx
+from networkx import Graph
 
-from .utils import Graph, Partition
+from .utils import Partition
 
 T = TypeVar("T")
 
