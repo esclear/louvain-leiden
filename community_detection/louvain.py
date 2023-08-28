@@ -5,10 +5,14 @@ This implementation follows the outline provided in the supplementary material o
 guaranteeing well-connected communities" by V.A. Traag, L. Waltman and N.J. van Eck.
 """
 
+from typing import TypeVar
+
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
 from .utils import Partition, aggregate_graph, argmax, flatₚ, singleton_partition
+
+T = TypeVar("T")
 
 
 def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition | None = None) -> Partition:

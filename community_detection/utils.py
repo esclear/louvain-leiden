@@ -3,10 +3,8 @@ from __future__ import annotations
 
 from functools import reduce
 from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
-    cast,
     Callable,
     Generic,
-    Iterable,
     Iterator,
     Sequence,
     TypeVar,
@@ -15,26 +13,12 @@ from typing import (  # noqa: UP035 # recommends to import Callable from collect
 from networkx import Graph, MultiGraph
 from networkx.algorithms.community import community_utils
 
-__all__ = [
-    'Partition',
-    'Graph',
-    'MultiGraph',
-    'freeze',
-    'recursive_size',
-    'flat',
-    'flatₚ',
-    'argmax',
-    'aggregate_graph',
-    'singleton_partition',
-]
 
 T = TypeVar("T")
 
 
 class Partition:
     """This class represents a partition of a graph's nodes."""
-
-    T = TypeVar("T")
 
     def __init__(self, G: Graph, P: list[set[T]]):
         """Create a new partition of the graph G, given by the nodes in the partition P of G's nodes."""
@@ -147,7 +131,7 @@ def flatₚ(𝓟: Partition) -> list[set[T]]:
     return [flat(C) for C in 𝓟]
 
 
-def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tuple[T, float, int] | None:
+def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tuple[T, float, int]:
     """
     Find the arg max with respect to a given objective function over a given list of parameters.
 
@@ -156,7 +140,7 @@ def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tup
     and the third parameter will be the index of the maximum in the `parameters` list.
     """
     if not parameters:
-        return None
+        raise ValueError("The given `parameters` must be a non-empty list!")
 
     idx = 0
     opt = parameters[idx]
@@ -184,7 +168,7 @@ def aggregate_graph(G: Graph, 𝓟: Partition) -> MultiGraph:
     represent the communities that a and b, respectively, are members of.
     """
     H = MultiGraph()
-    H.add_nodes_from([frozenset(c) for c in 𝓟])
+    H.add_nodes_from([frozenset(C) for C in 𝓟])
 
     for u, v in G.edges():
         C = frozenset(𝓟.node_community(u))

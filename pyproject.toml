@@ -46,7 +46,7 @@ warn_unused_configs = true
 
 # There is no proper typing stub of the networkx library
 [[tool.mypy.overrides]]
-module = [ "networkx", "networkx.algorithms.community" ]
+module = [ "networkx", "networkx.algorithms.community", "pandas" ]
 ignore_missing_imports = true
 
 
