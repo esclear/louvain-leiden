@@ -41,8 +41,7 @@ convention = "pep257"
 
 
 [tool.mypy]
-warn_return_any = true
-warn_unused_configs = true
+strict = true
 
 # There is no proper typing stub of the networkx library
 [[tool.mypy.overrides]]
