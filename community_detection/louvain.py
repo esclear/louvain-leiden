@@ -15,7 +15,7 @@ from .utils import Partition, aggregate_graph, argmax, flatₚ, singleton_partit
 T = TypeVar("T")
 
 
-def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition | None = None) -> Partition:
+def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) -> Partition[T]:
     """Perform the Louvain algorithm for community detection."""
     # If there is no partition given, start with every node in its' own community
     if 𝓟 is None:
@@ -41,7 +41,7 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition | None = None) -> 
         𝓟 = singleton_partition(G)
 
 
-def move_nodes(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T]) -> Partition:
+def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
     """Perform node moves to communities as long as the quality metric can be improved by moving."""
     # This is the python form of a "do-while" loop
     while True:

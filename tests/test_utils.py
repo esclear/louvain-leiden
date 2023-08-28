@@ -23,7 +23,7 @@ def test_partition_creation():
     H = nx.generators.barbell_graph(5, 2)
 
     # Check that we can create valid partitions for the graphs above
-    𝓟 = Partition(E, [])
+    𝓟: Partition[int] = Partition(E, [])
     assert 𝓟 is not None
     assert 𝓟.communities == ()
 

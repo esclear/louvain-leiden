@@ -17,7 +17,7 @@ from networkx.algorithms.community import community_utils
 T = TypeVar("T")
 
 
-class Partition:
+class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
     def __init__(self, G: Graph, P: list[set[T]]):
@@ -46,7 +46,7 @@ class Partition:
         result: bool = community_utils.is_partition(G, 𝓟)
         return result
 
-    def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition:
+    def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:
         """Move node v from its current community in this partition to the given target community."""
         # We don't want to create a new singleton set in every iteration below
         v_singleton = {v}
@@ -121,7 +121,7 @@ def flat(S: frozenset[T] | set[T] | T) -> set[T]:
     return reduce(lambda a, s: a | s, (flat(s) for s in S), set())
 
 
-def flatₚ(𝓟: Partition) -> list[set[T]]:
+def flatₚ(𝓟: Partition[T]) -> list[set[T]]:
     """
     Flatten a partition into a *list* of communities (each of which represented as a set).
 
@@ -159,7 +159,7 @@ def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tup
     return (opt, val, idx)
 
 
-def aggregate_graph(G: Graph, 𝓟: Partition) -> MultiGraph:
+def aggregate_graph(G: Graph, 𝓟: Partition[T]) -> MultiGraph:
     """
     Create an aggregate graph of the graph G with regards to the partition 𝓟.
 
@@ -179,7 +179,7 @@ def aggregate_graph(G: Graph, 𝓟: Partition) -> MultiGraph:
     return H
 
 
-def singleton_partition(G: Graph) -> Partition:
+def singleton_partition(G: Graph) -> Partition[T]:
     """Create a singleton partition, in which each community consists of exactly one vertex."""
     # Partition as list of sets
     P = [{v} for v in G.nodes]

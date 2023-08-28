@@ -15,7 +15,7 @@ class QualityMetric(ABC, Generic[T]):
     """A metric that, when called, measures the quality of a partition into communities."""
 
     @abstractmethod
-    def __call__(self, G: Graph, 𝓟: Partition) -> float:
+    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
         """Measure the quality of the given partition as applied to the graph provided."""
         raise NotImplementedError()
 
@@ -27,7 +27,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
         self.γ = γ
 
-    def __call__(self, G: Graph, 𝓟: Partition) -> float:
+    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
         node_degrees = dict(G.degree(weight=None))
         two_m = sum(node_degrees.values())
@@ -59,7 +59,7 @@ class CPM(QualityMetric[T], Generic[T]):
         """Create a new instance of the Constant Potts Model with the given resolution parameter γ."""
         self.γ = γ
 
-    def __call__(self, G: Graph, 𝓟: Partition) -> float:
+    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
 
         def community_summand(C: set[T]) -> float:

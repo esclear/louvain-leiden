@@ -17,7 +17,7 @@ from .utils import Graph, Partition, aggregate_graph, argmax, flatₚ, freeze, r
 T = TypeVar("T")
 
 
-def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition | None = None, θ: float = 0.05, γ: float = 1.0) -> Partition:
+def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, θ: float = 0.05, γ: float = 1.0) -> Partition[T]:
     """
     Perform the Leiden algorithm for community detection.
 
@@ -27,7 +27,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition | None = None, θ: 
         The graph / network to process
     𝓗 : QualityMetric[T]
         A quality metric to optimize
-    𝓟 : Partition, optional
+    𝓟 : Partition[T], optional
         A partition to refine, leave at the default of `None` when not refining an existing partition.
     θ : float, optional
         The θ parameter of the Leiden method, which determines the randomness in the refinement phase of the Leiden
@@ -59,7 +59,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition | None = None, θ: 
         𝓟 = Partition(G, [{v for v in G.nodes if v <= C} for C in 𝓟])
 
 
-def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T]) -> Partition:
+def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
     """Perform fast local node moves to communities as long as the quality metric can be improved by moving."""
     # Create a queue to visit all nodes in random order.
     # Here, the randomness stems from the fact that sets are unordered in python.
@@ -92,10 +92,10 @@ def move_nodes_fast(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T]) -> Partit
             return 𝓟
 
 
-def refine_partition(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T], θ: float, γ: float) -> Partition:
+def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float) -> Partition[T]:
     """Refine all communities by merging repeatedly, starting from a singleton partition."""
     # Assign each node to its own community
-    𝓟ᵣ = singleton_partition(G)
+    𝓟ᵣ: Partition[T] = singleton_partition(G)
 
     # Visit all communities
     for C in 𝓟:
@@ -105,7 +105,7 @@ def refine_partition(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T], θ: floa
     return 𝓟ᵣ
 
 
-def merge_nodes_subset(G: Graph, 𝓟: Partition, 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition:
+def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition[T]:
     def E(C, D) -> int:
         """Calculate |{ (u,v) ∈ E(G) | u ∈ C, v ∈ D }|."""  # noqa: D402 # disable warning that dislikes 'E' here
         # edge_boundary (from NetworkX) calculates a C-D-cut, i.e. all edges starting in C and ending in D
