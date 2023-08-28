@@ -4,21 +4,20 @@ from __future__ import annotations
 from functools import reduce
 from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
     Callable,
-    cast,
     Generic,
-    Iterator,
     Iterable,
+    Iterator,
     TypeAlias,
     TypeVar,
+    cast,
 )
 
 from networkx import Graph, MultiGraph
 from networkx.algorithms.community import community_utils
 
-
 T = TypeVar("T")
-
 Nested: TypeAlias = T | Iterable['Nested[T]']
+
 
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
@@ -121,8 +120,7 @@ def flat(S: Nested[T]) -> set[T]:
     if isinstance(S, Iterable):
         return reduce(lambda a, s: a | s, (flat(s) for s in S), set())
 
-    return { S }
-
+    return {S}
 
 
 def flatₚ(𝓟: Partition[T]) -> list[set[T]]:

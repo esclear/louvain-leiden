@@ -3,16 +3,7 @@ import pytest
 
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
-from community_detection.utils import (
-    Partition,
-    aggregate_graph,
-    argmax,
-    flat,
-    flatₚ,
-    freeze,
-    recursive_size,
-    singleton_partition,
-)
+from community_detection.utils import Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size, singleton_partition
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off

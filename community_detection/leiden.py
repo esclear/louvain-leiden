@@ -9,7 +9,7 @@ from math import exp
 from random import choices
 from typing import TypeVar
 
-from networkx import edge_boundary, Graph
+from networkx import Graph, edge_boundary
 
 from .quality_metrics import QualityMetric
 from .utils import Partition, aggregate_graph, argmax, flatₚ, freeze, recursive_size, singleton_partition
@@ -114,7 +114,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
     R = {
         v for v in S
           if E({v}, S - {v}) >= γ * recursive_size(v) * (recursive_size(S) - recursive_size(v))
-    }
+    }  # fmt: skip
 
     for v in R:
         # If v is in a singleton community, i.e. is a node that has not yet been merged
@@ -123,7 +123,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             𝓣 = freeze([
                 C for C in 𝓟
                   if C <= S and E(C, S - C) >= γ * float(recursive_size(C) * (recursive_size(S) - recursive_size(C)))
-            ])
+            ])  # fmt: skip
 
             # Now, choose a random community to put v into
             # We use python's random.choices for the weighted choice, as this is easiest.
