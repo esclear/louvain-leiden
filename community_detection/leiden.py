@@ -106,7 +106,7 @@ def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: f
 
 
 def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition[T]:
-    def E(C, D) -> int:
+    def E(C: set['T'] | frozenset['T'], D: set['T'] | frozenset['T']) -> int:
         """Calculate |{ (u,v) ∈ E(G) | u ∈ C, v ∈ D }|."""  # noqa: D402 # disable warning that dislikes 'E' here
         # edge_boundary (from NetworkX) calculates a C-D-cut, i.e. all edges starting in C and ending in D
         return sum(1 for _ in edge_boundary(G, C, D))

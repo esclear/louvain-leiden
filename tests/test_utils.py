@@ -1,14 +1,16 @@
+from typing import cast
+
 import networkx as nx
 import pytest
 
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
-from community_detection.utils import Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size, singleton_partition
+from community_detection.utils import Nested, Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size, singleton_partition
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
 
-def test_partition_creation():
+def test_partition_creation() -> None:
     E = nx.generators.empty_graph(0)
     G = nx.generators.classic.complete_graph(5)
     H = nx.generators.barbell_graph(5, 2)
@@ -47,11 +49,11 @@ def test_partition_creation():
         Partition(G, [{0, 1, 2}, {2, 3, 4}])
 
 
-def test_partition_moving():
+def test_partition_moving() -> None:
     G = nx.generators.classic.complete_graph(5)
-    P = [{0, 1, 2, 3}, {4}]
+    comms = [{0, 1, 2, 3}, {4}]
 
-    𝓟 = Partition(G, P)              # Start with the partition indicated in P and do each of the following:
+    𝓟 = Partition(G, comms)          # Start with the partition indicated in P and do each of the following:
     𝓠 = 𝓟.move_node(0, set())        # a) Move node 0 to its own community (i.e. nothing should change)
     𝓡 = 𝓟.move_node(0, {4})          # b) Move node 0 to the community which contains node 4
     𝓢 = 𝓟.move_node(4, {0, 1, 2, 3}) # c) Move node 0 to the community containing all other nodes
@@ -70,14 +72,14 @@ def test_partition_moving():
     assert 𝓢.as_set() == freeze([{0, 1, 2, 3, 4}])
 
 
-def test_freeze():
+def test_freeze() -> None:
     assert freeze([]) == set()
     assert freeze([set()]) == { frozenset(set()) }
-    assert freeze([{1, 2, 3}, {4, 5}, set()]) == { frozenset({1, 2, 3}), frozenset({4, 5}), frozenset() }
+    assert freeze([{1, 2, 3}, {4, 5}, cast(set[int], set())]) == { frozenset({1, 2, 3}), frozenset({4, 5}), frozenset() }
     assert freeze([set(), set()]) == { frozenset(set()) }
 
 
-def test_recursive_size():
+def test_recursive_size() -> None:
     assert recursive_size([]) == 0
 
     assert recursive_size(42) == 1
@@ -90,7 +92,7 @@ def test_recursive_size():
     assert recursive_size([1, 2, 3]) == 3
 
 
-def test_flat():
+def test_flat() -> None:
     # Note that '{}' is not an empty set, but an empty dict!
     assert flat(set()) == set()  # test the input {}
     assert flat({ 0, 1, 2, 3 }) == {0, 1, 2, 3}  # test the input {0, 1, 2, 3}
@@ -100,14 +102,14 @@ def test_flat():
     assert flat({ 0, frozenset( {1} ), frozenset( {2, frozenset({3}) } ) }) == {0, 1, 2, 3}  # test the input { 0, {1}, {2, {3}} }
 
 
-def test_flat_partition():
+def test_flat_partition() -> None:
     # flatₚ is called on aggregate graphs, where every node of the aggregate graph represents (potentially arbitrarily nested) sets
     # of nodes in the original graph.
 
     # First, check with a simple graph
     G = nx.generators.classic.complete_graph(10)
 
-    𝓟 = singleton_partition(G)  # singleton partition
+    𝓟: Partition[int] = singleton_partition(G)  # singleton partition
     𝓠 = Partition(G, [{ *G.nodes }])  # trivial partition (all nodes in one community)
 
     # To compare properly, we use the freeze function, so that we can compare sets, where the order doesn't matter.
@@ -118,21 +120,23 @@ def test_flat_partition():
     𝓡 = Partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])
     H = aggregate_graph(G, 𝓡)
 
-    𝓢 = Partition(H, [
+    # On the aggregate graph H, define a new partition, consisting of three communities.
+    # It combines the nodes 0..4, 5..6, and 7..9 of the *underlying graph* G into one community each.
+    𝓢: Partition[frozenset[int]] = Partition(H, [
         { frozenset({0, 1, 2}), frozenset({3, 4}) },
         { frozenset({5, 6}) },
         { frozenset({7, 8}), frozenset({9}) }
     ])
 
-    𝓣 = Partition(H, S)
+    # Also check that we can produce a (new) partition by providing another partition
+    𝓣: Partition[frozenset[int]] = Partition(H, 𝓢)
 
     assert freeze(flatₚ(𝓣)) == freeze([ {0, 1, 2, 3, 4} , {5, 6}, {7, 8, 9}])
 
 
-def test_argmax():
-    assert argmax(lambda x: x, None) is None
-    assert argmax(lambda x: x, []) is None
-    assert argmax(lambda x: x, set()) is None
+def test_argmax() -> None:
+    with pytest.raises(ValueError):
+        argmax(lambda x: x, []) is None
 
     # argmax returns tuples of the form (arg, value, index)
     # check that for constant arguments and values the first index (0) is chosen:
@@ -148,7 +152,7 @@ def test_argmax():
     assert argmax(lambda x: x, [0, 1, 3, 8, 5, 8, 6]) == (8, 8, 3)
 
 
-def test_aggregate_graph():
+def test_aggregate_graph() -> None:
     G = nx.generators.classic.complete_graph(5)
     communities = [{0}, {1, 2}, {3, 4}]
     𝓟 = Partition(G, communities)
@@ -171,14 +175,14 @@ def test_aggregate_graph():
     assert H.number_of_edges(frozenset({3, 4}), frozenset({3, 4})) == 1
 
 
-def test_singleton_partition():
+def test_singleton_partition() -> None:
     E = nx.generators.empty_graph(0)
     G = nx.generators.classic.complete_graph(5)
     H = nx.generators.barbell_graph(5, 2)
 
-    𝓟 = singleton_partition(E)
-    𝓠 = singleton_partition(G)
-    𝓡 = singleton_partition(H)
+    𝓟: Partition[int] = singleton_partition(E)
+    𝓠: Partition[int] = singleton_partition(G)
+    𝓡: Partition[int] = singleton_partition(H)
 
     assert 𝓟.as_set() == freeze([])
     assert 𝓠.as_set() == freeze([{0}, {1}, {2}, {3}, {4}])

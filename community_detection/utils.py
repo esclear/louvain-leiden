@@ -4,6 +4,7 @@ from __future__ import annotations
 from functools import reduce
 from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
     Callable,
+    Collection,
     Generic,
     Iterable,
     Iterator,
@@ -15,16 +16,17 @@ from typing import (  # noqa: UP035 # recommends to import Callable from collect
 from networkx import Graph, MultiGraph
 from networkx.algorithms.community import community_utils
 
-T = TypeVar("T")
-Nested: TypeAlias = T | Iterable['Nested[T]']
+S = TypeVar("S")
+Nested: TypeAlias = S | Iterable['Nested[S]']
+T = TypeVar("T", covariant=True)
 
 
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
-    def __init__(self, G: Graph, P: list[set[T]]):
-        """Create a new partition of the graph G, given by the nodes in the partition P of G's nodes."""
-        assert Partition.is_partition(G, P), "P must be a partition of G!"
+    def __init__(self, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]):
+        """Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes."""
+        assert Partition.is_partition(G, 𝓟), "𝓟 must be a partition of G!"
 
         # Remember the graph
         self.G = G
@@ -33,14 +35,14 @@ class Partition(Generic[T]):
         # We store /lists/ of sets instead of /sets/ of sets, because changeable sets in python are not /hashable/ and
         # thus can't be stored in a set. We could store a set of frozensets instead, however, this would complicate
         # operations such as the move_node operation below, where we modify the partitions.
-        self._sets = P
+        self._sets = [set(c) for c in 𝓟]
 
         # For faster moving of nodes, store for each node the community it belongs to
         # The result is a dict that maps a node to its community (a set of nodes, containing that node).
-        self._node_part = {v: c for c in P for v in c}  # nested comprehensions are a bit unintuitive in python
+        self._node_part = {v: c for c in self._sets for v in c}  # nested comprehensions are a bit unintuitive in python
 
     @staticmethod
-    def is_partition(G: Graph, 𝓟: list[set[T]]) -> bool:
+    def is_partition(G: Graph, 𝓟: Collection[Collection[T]]) -> bool:
         """Determine whether 𝓟 is indeed a partition of G."""
         # There used to be a custom implementation here, which turned out to be similar to Networkx' implementation.
         # Since I expect Networkx' implementation to be as optimized as possible and since this is only used as a
@@ -48,7 +50,12 @@ class Partition(Generic[T]):
         result: bool = community_utils.is_partition(G, 𝓟)
         return result
 
-    def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:
+    # In normal circumstances, using covariant type variables as function parameter (as we do here with T) can cause problems.
+    # (see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
+    # However, ths is not a problem for move_node and node_community, as the type variable T is only used as a type marker and
+    # we don't rely on *any* functionality of T at all. Thus, to keep the user interface easy to use, we ignore the type check
+    # for the signatures of move_node and node_community down below.
+    def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:  # type: ignore
         """Move node v from its current community in this partition to the given target community."""
         # We don't want to create a new singleton set in every iteration below
         v_singleton = {v}
@@ -67,13 +74,18 @@ class Partition(Generic[T]):
 
         return Partition(self.G, new_partitions)
 
-    def node_community(self, v: T) -> set[T]:
+    # See comment over move_node regarding the ignored typing check
+    def node_community(self, v: T) -> set[T]:  # type: ignore
         """Get the community the node v is currently part of."""
         return self._node_part[v]
 
     def __iter__(self) -> Iterator[set[T]]:
         """Make a Partition object iterable, returning an iterator over the communities."""
         return self._sets.__iter__()
+
+    def __contains__(self, nodes: object) -> bool:
+        """Return whether a given set of nodes is part of the partition or not."""
+        return nodes in self._sets
 
     def as_set(self) -> set[frozenset[T]]:
         """Return a set of sets of nodes that represents the communities."""
@@ -113,17 +125,13 @@ def recursive_size(S: Nested[T]) -> int:
 
 def flat(S: Nested[T]) -> set[T]:
     """Flatten potentially nested sets into a flattened (non-nested) set."""
-    # "unfreeze" frozen sets
-    if isinstance(S, frozenset):
-        S = cast(Nested[T], set(S))
-
     if isinstance(S, Iterable):
         return reduce(lambda a, s: a | s, (flat(s) for s in S), set())
 
     return {S}
 
 
-def flatₚ(𝓟: Partition[T]) -> list[set[T]]:
+def flatₚ(𝓟: Partition[Nested[T]]) -> list[set[T]]:
     """
     Flatten a partition into a *list* of communities (each of which represented as a set).
 

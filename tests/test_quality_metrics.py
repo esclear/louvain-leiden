@@ -4,7 +4,7 @@ import networkx as nx
 
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
-from community_detection.quality_metrics import CPM, Modularity
+from community_detection.quality_metrics import CPM, Modularity, QualityMetric
 from community_detection.utils import *
 
 PRECISION = 1e-15
@@ -12,7 +12,7 @@ PRECISION = 1e-15
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
 
-def test_modularity_trivial_values():
+def test_modularity_trivial_values() -> None:
     """
     Test modularity calculation for special graphs and partitions to see if the values match our expectation.
     """
@@ -21,7 +21,7 @@ def test_modularity_trivial_values():
     E = nx.empty_graph(10)
     𝓠 = Partition(E, [{i} for i in range(10)])
 
-    𝓗 = Modularity(1)
+    𝓗: QualityMetric[int] = Modularity(1)
 
     assert 0.0 == 𝓗(C, 𝓟)
     assert abs(-0.1 - 𝓗(C, 𝓠)) < PRECISION
@@ -31,7 +31,7 @@ def test_modularity_trivial_values():
     assert isnan(𝓗(E, 𝓠))
 
 
-def test_cpm_trivial_values():
+def test_cpm_trivial_values() -> None:
     """
     Test modularity calculation for special graphs and partitions to see if the values match the expectation.
     """
@@ -40,7 +40,7 @@ def test_cpm_trivial_values():
     E = nx.empty_graph(10)
     𝓠 = Partition(E, [{i} for i in range(10)])
 
-    𝓗 = CPM(0.25)
+    𝓗: QualityMetric[int] = CPM(0.25)
 
     # Values calculated manually for γ = 0.25:
     assert -11.25 == 𝓗(E, 𝓟)  # The empty graph (no edges) with the trivial partition has CPM -11.25
@@ -49,7 +49,7 @@ def test_cpm_trivial_values():
     assert  33.75 == 𝓗(C, 𝓟)  # The graph K_10 with the trivial partition has CPM 33.75 (improves singleton partition)
 
 
-def test_modularity_comparison_networkx():
+def test_modularity_comparison_networkx() -> None:
     """
     This test compares our implementation of Modularity and the Louvain algorithm with the ones in NetworkX.
     """
@@ -59,6 +59,7 @@ def test_modularity_comparison_networkx():
     G = nx.karate_club_graph()
 
     # We use modularity as quality function, with a resolution of 1.
+    𝓗: QualityMetric[int] # Type annotation for 𝓗 below
     𝓗 = Modularity(1)
     𝓟 = louvain(G, 𝓗)
 
@@ -66,9 +67,11 @@ def test_modularity_comparison_networkx():
     # Due to the randomized nature of the louvain algorithm, we need to supply the implementation with a seed
     # so that the result stays consistent. Otherwise the calculated communities will change between runs!
     𝓠 = Partition(G, nx.community.louvain_communities(G, weight=None, resolution=1, seed=1))
-    # The following lambda uses NetworkX' implementation of modularity and makes it available so that we can use it
-    # to compare the values calculated by our implementation to the values calculated by NetworkX' implementation.
-    nxMod = lambda 𝓡: nx.community.modularity(G, 𝓡.as_set(), weight=None, resolution=1)
+    # The following function uses NetworkX' implementation of modularity and makes it available so that we can use it
+    # as a reference implementaiton to compare the values calculated by our implementation against.
+    def nxMod(𝓡: Partition[int]) -> float:
+        mod: float = nx.community.modularity(G, 𝓡.as_set(), weight=None, resolution=1)
+        return mod
 
     # Save modularities calculated by our and NX' modularity functions of partitions calculated by us and NetworkX.
     olom, olnm, nlom, nlnm = 𝓗(G, 𝓟), nxMod(𝓟), 𝓗(G, 𝓠), nxMod(𝓠)
