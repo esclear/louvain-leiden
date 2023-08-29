@@ -6,7 +6,7 @@ guaranteeing well-connected communities" by V.A. Traag, L. Waltman and N.J. van 
 """
 
 from math import exp
-from random import choices
+from random import choices, shuffle
 from typing import TypeVar
 
 from networkx import Graph, edge_boundary
@@ -60,17 +60,21 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
 
 
 def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
-    """Perform fast local node moves to communities as long as the quality metric can be improved by moving."""
+    """
+    Perform fast local node moves to communities to improve the partition's quality.
+    
+    For every node, greedily move it to a neighboring community, maximizing the improvement in the partition's quality.
+    """
     # Create a queue to visit all nodes in random order.
-    # Here, the randomness stems from the fact that sets are unordered in python.
-    Q = set(G.nodes)
+    Q = list(G.nodes)
+    shuffle(Q)
 
     while True:
         # Store current ("old") quality function value
         𝓗ₒ = 𝓗(G, 𝓟)
 
-        # Determine next node to visit
-        v = Q.pop()
+        # Determine next node to visit by popping first node in the queue
+        v = Q.pop(0)
 
         # Find best community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
@@ -85,7 +89,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
             N = {u for u in G.neighbors(v) if u not in Cₘ}
 
             # Visit these neighbors as well
-            Q.update(N)  # As Q is a set, this is the same as Q.update(N - Q)
+            Q.extend(N - set(Q))
 
         # If queue is empty, return 𝓟
         if len(Q) == 0:

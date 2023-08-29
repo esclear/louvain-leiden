@@ -68,7 +68,7 @@ def test_leiden_barbell_cpm() -> None:
     G = nx.generators.classic.barbell_graph(5, 2)
 
     𝓗: QualityMetric[int]  # Type annotation for 𝓗 below
-    𝓗 = CPM(1)
+    𝓗 = CPM(0.9999999999999986)
     𝓠 = leiden(G, 𝓗)
 
     assert 𝓠.as_set() == BARBELL_PARTS
