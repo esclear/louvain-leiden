@@ -17,9 +17,9 @@ def test_modularity_trivial_values() -> None:
     Test modularity calculation for special graphs and partitions to see if the values match our expectation.
     """
     C = nx.complete_graph(10)
-    𝓟 = Partition(C, [{i for i in range(10)}])
+    𝓟 = Partition.from_partition(C, [{i for i in range(10)}])
     E = nx.empty_graph(10)
-    𝓠 = Partition(E, [{i} for i in range(10)])
+    𝓠 = Partition.from_partition(E, [{i} for i in range(10)])
 
     𝓗: QualityMetric[int] = Modularity(1)
 
@@ -36,9 +36,9 @@ def test_cpm_trivial_values() -> None:
     Test modularity calculation for special graphs and partitions to see if the values match the expectation.
     """
     C = nx.complete_graph(10)
-    𝓟 = Partition(C, [{i for i in range(10)}])
+    𝓟 = Partition.from_partition(C, [{i for i in range(10)}])
     E = nx.empty_graph(10)
-    𝓠 = Partition(E, [{i} for i in range(10)])
+    𝓠 = Partition.from_partition(E, [{i} for i in range(10)])
 
     𝓗: QualityMetric[int] = CPM(0.25)
 
@@ -66,7 +66,7 @@ def test_modularity_comparison_networkx() -> None:
     # We compare the result to a partition calculated by the NetworkX library.
     # Due to the randomized nature of the louvain algorithm, we need to supply the implementation with a seed
     # so that the result stays consistent. Otherwise the calculated communities will change between runs!
-    𝓠 = Partition(G, nx.community.louvain_communities(G, weight=None, resolution=1, seed=1))
+    𝓠 = Partition.from_partition(G, nx.community.louvain_communities(G, weight=None, resolution=1, seed=1))
     # The following function uses NetworkX' implementation of modularity and makes it available so that we can use it
     # as a reference implementaiton to compare the values calculated by our implementation against.
     def nxMod(𝓡: Partition[int]) -> float:

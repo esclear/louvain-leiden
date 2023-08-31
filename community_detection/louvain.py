@@ -31,7 +31,7 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
         # When every community consists of a single node, terminate,
         # returning the flattened partition, as given by 𝓟.
         if len(𝓟) == len(G.nodes):
-            return Partition(G_orig, flatₚ(𝓟))
+            return Partition.from_partition(G_orig, flatₚ(𝓟))
 
         # Second phase: Aggregation of the network
         # Create the aggregate graph of G based on the partition 𝓟

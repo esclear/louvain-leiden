@@ -16,19 +16,19 @@ def test_partition_creation() -> None:
     H = nx.generators.barbell_graph(5, 2)
 
     # Check that we can create valid partitions for the graphs above
-    𝓟: Partition[int] = Partition(E, [])
+    𝓟: Partition[int] = Partition.from_partition(E, [])
     assert 𝓟 is not None
     assert 𝓟.communities == ()
 
-    𝓠 = Partition(G, [{0, 1, 2, 3, 4}])
+    𝓠 = Partition.from_partition(G, [{0, 1, 2, 3, 4}])
     assert 𝓠 is not None
     assert 𝓠.communities == ({0, 1, 2, 3, 4},)
 
-    𝓡 = Partition(G, [{0}, {1}, {2}, {3}, {4}])
+    𝓡 = Partition.from_partition(G, [{0}, {1}, {2}, {3}, {4}])
     assert 𝓡 is not None
     assert 𝓡.communities == ({0}, {1}, {2}, {3}, {4})
 
-    𝓢 = Partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
+    𝓢 = Partition.from_partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
     assert 𝓢 is not None
     assert 𝓢.communities == ({0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11})
 
@@ -40,20 +40,20 @@ def test_partition_creation() -> None:
     # Now check that partition creation fails when given sets which don't form a partition of the graph's nodes:
     # Partition contains nodes not in the graph:
     with pytest.raises(AssertionError):
-        Partition(E, [{0}])
+        Partition.from_partition(E, [{0}])
     # Not all graph nodes are present:
     with pytest.raises(AssertionError):
-        Partition(G, [{0, 1, 3, 4}])  # Missing 2
+        Partition.from_partition(G, [{0, 1, 3, 4}])  # Missing 2
     # There is a non-empty intersection of two sets in the partition
     with pytest.raises(AssertionError):
-        Partition(G, [{0, 1, 2}, {2, 3, 4}])
+        Partition.from_partition(G, [{0, 1, 2}, {2, 3, 4}])
 
 
 def test_partition_moving() -> None:
     G = nx.generators.classic.complete_graph(5)
     comms = [{0, 1, 2, 3}, {4}]
 
-    𝓟 = Partition(G, comms)          # Start with the partition indicated in P and do each of the following:
+    𝓟 = Partition.from_partition(G, comms)          # Start with the partition indicated in P and do each of the following:
     𝓠 = 𝓟.move_node(0, set())        # a) Move node 0 to its own community (i.e. nothing should change)
     𝓡 = 𝓟.move_node(0, {4})          # b) Move node 0 to the community which contains node 4
     𝓢 = 𝓟.move_node(4, {0, 1, 2, 3}) # c) Move node 0 to the community containing all other nodes
@@ -110,26 +110,26 @@ def test_flat_partition() -> None:
     G = nx.generators.classic.complete_graph(10)
 
     𝓟: Partition[int] = singleton_partition(G)  # singleton partition
-    𝓠 = Partition(G, [{ *G.nodes }])  # trivial partition (all nodes in one community)
+    𝓠 = Partition.from_partition(G, [{ *G.nodes }])  # trivial partition (all nodes in one community)
 
     # To compare properly, we use the freeze function, so that we can compare sets, where the order doesn't matter.
     assert freeze(flatₚ(𝓟)) == freeze([{i} for i in range(10)])
     assert freeze(flatₚ(𝓠)) == freeze([{i for i in range(10)}])
 
     # Calculate an aggregate graph by repeatedly merging:
-    𝓡 = Partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])
+    𝓡 = Partition.from_partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])
     H = aggregate_graph(G, 𝓡)
 
     # On the aggregate graph H, define a new partition, consisting of three communities.
     # It combines the nodes 0..4, 5..6, and 7..9 of the *underlying graph* G into one community each.
-    𝓢: Partition[frozenset[int]] = Partition(H, [
+    𝓢: Partition[frozenset[int]] = Partition.from_partition(H, [
         { frozenset({0, 1, 2}), frozenset({3, 4}) },
         { frozenset({5, 6}) },
         { frozenset({7, 8}), frozenset({9}) }
     ])
 
     # Also check that we can produce a (new) partition by providing another partition
-    𝓣: Partition[frozenset[int]] = Partition(H, 𝓢)
+    𝓣: Partition[frozenset[int]] = Partition.from_partition(H, 𝓢)
 
     assert freeze(flatₚ(𝓣)) == freeze([ {0, 1, 2, 3, 4} , {5, 6}, {7, 8, 9}])
 
@@ -155,7 +155,7 @@ def test_argmax() -> None:
 def test_aggregate_graph() -> None:
     G = nx.generators.classic.complete_graph(5)
     communities = [{0}, {1, 2}, {3, 4}]
-    𝓟 = Partition(G, communities)
+    𝓟 = Partition.from_partition(G, communities)
 
     H = aggregate_graph(G, 𝓟)
 

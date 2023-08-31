@@ -1,6 +1,7 @@
 """This module provides some useful types and functions used in the algorithms implementations."""
 from __future__ import annotations
 
+import copy
 from functools import reduce
 from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
     Callable,
@@ -24,22 +25,42 @@ T = TypeVar("T", covariant=True)
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
-    def __init__(self, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]):
-        """Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes."""
-        assert Partition.is_partition(G, 𝓟), "𝓟 must be a partition of G!"
+    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int]):
+        """
+        Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
 
-        # Remember the graph
+        This constructor is meant for internal use only, please use `Partition.from_partition` instead.
+        """
+        # Remember the graph (i.e. a reference to it)
         self.G = G
 
         # The partition as a list of sets
         # We store /lists/ of sets instead of /sets/ of sets, because changeable sets in python are not /hashable/ and
         # thus can't be stored in a set. We could store a set of frozensets instead, however, this would complicate
         # operations such as the move_node operation below, where we modify the partitions.
-        self._sets = [set(c) for c in 𝓟]
+        self._sets = sets
 
-        # For faster moving of nodes, store for each node the community it belongs to
-        # The result is a dict that maps a node to its community (a set of nodes, containing that node).
-        self._node_part = {v: c for c in self._sets for v in c}  # nested comprehensions are a bit unintuitive in python
+        # For faster moving of nodes, store for each node the community it belongs to.
+        # This is a dict, mapping each node to its community (the community's index in self._sets).
+        self._node_part = node_part
+
+    @classmethod
+    def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]) -> Partition[T]:
+        """
+        Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
+        """
+        if not Partition.is_partition(G, 𝓟):
+            raise AssertionError("𝓟 must be a partition of G!")
+
+        # The partition as a list of sets
+        # Transform the given collection into a list of sets representing the communities
+        sets = [set(c) for c in 𝓟]
+
+        # Generate the lookup table
+        # (The order of nested comprehensions is a bit unintuitive in python.)
+        node_part = {v: idx for idx, com in enumerate(sets) for v in com}
+
+        return cls(G, sets, node_part)
 
     @staticmethod
     def is_partition(G: Graph, 𝓟: Collection[Collection[T]]) -> bool:
@@ -57,31 +78,48 @@ class Partition(Generic[T]):
     # for the signatures of move_node and node_community down below.
     def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:  # type: ignore
         """Move node v from its current community in this partition to the given target community."""
-        # We don't want to create a new singleton set in every iteration below
-        v_singleton = {v}
-        new_partitions: list[set[T]] = [
-            # Add v to the target community and remove v from all other communities …
-            # (removing v only from its previous community in practice.)
-            (p | v_singleton if p == target else p - v_singleton)
-            # … p in this parition.
-            for p in self
-        ] + (
-            [v_singleton] if target == set() else []
-        )  # If the target is an empty set, also include v, otherwise don't
+        sets, node_part = copy.deepcopy(self._sets), self._node_part.copy()
+        # Determine the index of the community that v was in initially
+        source_partition_idx = node_part[v]
 
-        # And remove empty sets from the partition
-        new_partitions = [p for p in new_partitions if len(p) > 0]
+        # If the target set is non-empty, i.e. an existing community, determine its index in _sets
+        if len(target) > 0:
+            # Get any element of the target set …
+            el = next(iter(target))
+            # … and query its index in the _sets list
+            target_partition_idx = node_part[el]
+        # Otherwise, create a new (currently empty) partition and get its index.
+        else:
+            target_partition_idx = len(sets)
+            sets.append(set())
 
-        return Partition(self.G, new_partitions)
+        # Remove `v` from its old community and place it into the target partition
+        sets[source_partition_idx].discard(v)
+        sets[target_partition_idx].add(v)
 
-    # See comment over move_node regarding the ignored typing check
+        # Update v's entry in the index lookup table
+        node_part[v] = target_partition_idx
+
+        # If the original partition is empty now, that we removed v from it, remove it and adjust the indexes in _node_part
+        if len(sets[source_partition_idx]) == 0:
+            # Remove the now empty set from `sets`
+            sets.pop(source_partition_idx)
+            # And adjust the indices in the lookup table
+            node_part = {v: (i if i < source_partition_idx else i - 1) for v, i in node_part.items()}
+
+        return Partition(self.G, sets, node_part)
+
+    # We ignore the typing check for the following function, as it is only a read-only function:
+    # Using a covariant type variable as a function parameter (as we do here with T) can cause problems.
+    # (see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
+    # However, as node_community serves as a pure read-only function, doing so poses no problem here and keeps the API simple.
     def node_community(self, v: T) -> set[T]:  # type: ignore
         """Get the community the node v is currently part of."""
-        return self._node_part[v]
+        return self._sets[self._node_part[v]]
 
     def __iter__(self) -> Iterator[set[T]]:
         """Make a Partition object iterable, returning an iterator over the communities."""
-        return self._sets.__iter__()
+        return filter(lambda s: len(s) > 0, self._sets)
 
     def __contains__(self, nodes: object) -> bool:
         """Return whether a given set of nodes is part of the partition or not."""
@@ -89,7 +127,7 @@ class Partition(Generic[T]):
 
     def as_set(self) -> set[frozenset[T]]:
         """Return a set of sets of nodes that represents the communities."""
-        return freeze(self._sets)
+        return freeze(self.communities)
 
     def __len__(self) -> int:
         """Get the size (number of communities) of the partition."""
@@ -100,9 +138,9 @@ class Partition(Generic[T]):
         """
         Return the communities in this partition as a tuple.
 
-        The order is of no importance; we're using tuples as an immutable representation of a set / list.
+        We're using tuples as an immutable representation of a set / list, that is, the order of entries is of no importance.
         """
-        return tuple(self._sets)
+        return tuple(filter(lambda s: len(s) > 0, self._sets))
 
 
 def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
@@ -192,5 +230,5 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T]) -> MultiGraph:
 def singleton_partition(G: Graph) -> Partition[T]:
     """Create a singleton partition, in which each community consists of exactly one vertex."""
     # Partition as list of sets
-    P = [{v} for v in G.nodes]
-    return Partition(G, P)
+    𝓟 = [{v} for v in G.nodes]
+    return Partition.from_partition(G, P)

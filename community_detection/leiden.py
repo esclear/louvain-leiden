@@ -39,7 +39,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
     """
     # If there is no partition given, start with all nodes in the same community
     if 𝓟 is None:
-        𝓟 = Partition(G, [{v for v in G.nodes}])
+        𝓟 = Partition.from_partition(G, [{v for v in G.nodes}])
 
     # Remember the original graph
     G_orig = G
@@ -49,14 +49,14 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
         # When every community consists of a single node only, terminate, returning the flat partition given by 𝓟
         if len(𝓟) == len(G.nodes):
             # Return the partition 𝓟 in terms of the original graph, G_orig
-            return Partition(G_orig, flatₚ(𝓟))
+            return Partition.from_partition(G_orig, flatₚ(𝓟))
 
         𝓟ᵣ = refine_partition(G, 𝓟, 𝓗, θ, γ)
         # Create the aggregate graph of G based on 𝓟ᵣ …
         G = aggregate_graph(G, 𝓟ᵣ)
 
         # … but maintain partition 𝓟
-        𝓟 = Partition(G, [{v for v in G.nodes if v <= C} for C in 𝓟])
+        𝓟 = Partition.from_partition(G, [{v for v in G.nodes if v <= C} for C in 𝓟])
 
 
 def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
