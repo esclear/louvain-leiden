@@ -51,7 +51,7 @@ def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partitio
         for v in G.nodes:
             # Find best community for node `v` to be in, potentially creating a new community.
             # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-            (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, [*𝓟, set()])
+            (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C, 𝓗ₒ), [*𝓟, set()])
 
             # If we get a strictly better value, assign v to community Cₘ
             if 𝛥𝓗 > 0:

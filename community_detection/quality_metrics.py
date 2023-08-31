@@ -20,6 +20,13 @@ class QualityMetric(ABC, Generic[T]):
         """Measure the quality of the given partition as applied to the graph provided."""
         raise NotImplementedError()
 
+    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], baseline: None | float = None) -> float:
+        """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        if not baseline:
+            baseline = self(G, 𝓟)
+        moved = 𝓟.move_node(v, target)
+        return self(G, moved) - baseline
+
 
 class Modularity(QualityMetric[T], Generic[T]):
     """Implementation of Modularity as a quality function."""

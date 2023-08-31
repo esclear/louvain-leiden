@@ -110,9 +110,7 @@ def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: f
 
 
 def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition[T]:
-    """
-    Merge the nodes in the subset S into one or more sets to refine the partition 𝓟.
-    """
+    """Merge the nodes in the subset S into one or more sets to refine the partition 𝓟."""
 
     def E(C: set['T'] | frozenset['T'], D: set['T'] | frozenset['T']) -> int:
         """Calculate |{ (u,v) ∈ E(G) | u ∈ C, v ∈ D }|."""  # noqa: D402 # disable warning that dislikes 'E' here
@@ -140,9 +138,8 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             𝓗ₒ = 𝓗(G, 𝓟)
 
             # Have a list of pairs of communities in 𝓣 together with the improvement (𝛥𝓗) of moving v to the community
-            communities = [(C, 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ) for C in 𝓣]
             # Only consider communities for which the quality function doesn't degrade, if v is moved there
-            communities = list(filter(lambda C_𝛥𝓗: C_𝛥𝓗[1] >= 0, communities))
+            communities = [(C, 𝛥𝓗) for (C, 𝛥𝓗) in ((C, 𝓗.delta(G, 𝓟, v, C, 𝓗ₒ)) for C in 𝓣) if 𝛥𝓗 >= 0]
 
             weights = [exp(𝛥𝓗 / θ) for (C, 𝛥𝓗) in communities]
 

@@ -46,9 +46,7 @@ class Partition(Generic[T]):
 
     @classmethod
     def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]) -> Partition[T]:
-        """
-        Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
-        """
+        """Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes."""
         if not Partition.is_partition(G, 𝓟):
             raise AssertionError("𝓟 must be a partition of G!")
 
@@ -231,4 +229,4 @@ def singleton_partition(G: Graph) -> Partition[T]:
     """Create a singleton partition, in which each community consists of exactly one vertex."""
     # Partition as list of sets
     𝓟 = [{v} for v in G.nodes]
-    return Partition.from_partition(G, P)
+    return Partition.from_partition(G, 𝓟)
