@@ -10,7 +10,7 @@ from typing import TypeVar
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, flatₚ, singleton_partition
+from .utils import Partition, aggregate_graph, argmax, flatₚ
 
 T = TypeVar("T")
 
@@ -19,7 +19,7 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
     """Perform the Louvain algorithm for community detection."""
     # If there is no partition given, start with every node in its' own community
     if 𝓟 is None:
-        𝓟 = singleton_partition(G)
+        𝓟 = Partition.singleton_partition(G)
 
     # Remember the original graph
     G_orig = G
@@ -38,7 +38,7 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
         G = aggregate_graph(G, 𝓟)
         # And update 𝓟 to be a singleton partition of G, i.e. every node in the aggregate graph G
         # is assigned to its own community.
-        𝓟 = singleton_partition(G)
+        𝓟 = Partition.singleton_partition(G)
 
 
 def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:

@@ -12,7 +12,7 @@ from typing import TypeVar
 from networkx import Graph, edge_boundary
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, flatₚ, freeze, recursive_size, singleton_partition
+from .utils import Partition, aggregate_graph, argmax, flatₚ, freeze, recursive_size
 
 T = TypeVar("T")
 
@@ -78,7 +78,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
 
         # Find best community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗(G, 𝓟.move_node(v, C)) - 𝓗ₒ, [*𝓟, set()])
+        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C, 𝓗ₒ), [*𝓟, set()])
 
         # If we can achieve a strict improvement
         if 𝛥𝓗 > 0:
@@ -99,7 +99,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
 def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float) -> Partition[T]:
     """Refine all communities by merging repeatedly, starting from a singleton partition."""
     # Assign each node to its own community
-    𝓟ᵣ: Partition[T] = singleton_partition(G)
+    𝓟ᵣ: Partition[T] = Partition.singleton_partition(G)
 
     # Visit all communities
     for C in 𝓟:

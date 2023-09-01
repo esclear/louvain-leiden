@@ -60,6 +60,16 @@ class Partition(Generic[T]):
 
         return cls(G, sets, node_part)
 
+    @classmethod
+    def singleton_partition(cls, G: Graph) -> Partition[T]:
+        """Create a singleton partition, in which each community consists of exactly one vertex."""
+        # Generate a new partition
+        sets = [{v} for v in G.nodes]
+        # Together with a lookup table / dict
+        node_part = {v: i for i, s in enumerate(sets) for v in iter(s)}
+
+        return cls(G, sets, node_part)
+
     @staticmethod
     def is_partition(G: Graph, 𝓟: Collection[Collection[T]]) -> bool:
         """Determine whether 𝓟 is indeed a partition of G."""
@@ -223,10 +233,3 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T]) -> MultiGraph:
         H.add_edge(C, D)
 
     return H
-
-
-def singleton_partition(G: Graph) -> Partition[T]:
-    """Create a singleton partition, in which each community consists of exactly one vertex."""
-    # Partition as list of sets
-    𝓟 = [{v} for v in G.nodes]
-    return Partition.from_partition(G, 𝓟)

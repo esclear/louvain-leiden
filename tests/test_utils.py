@@ -5,7 +5,7 @@ import pytest
 
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
-from community_detection.utils import Nested, Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size, singleton_partition
+from community_detection.utils import Nested, Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
@@ -109,7 +109,7 @@ def test_flat_partition() -> None:
     # First, check with a simple graph
     G = nx.generators.classic.complete_graph(10)
 
-    𝓟: Partition[int] = singleton_partition(G)  # singleton partition
+    𝓟: Partition[int] = Partition.singleton_partition(G)  # singleton partition
     𝓠 = Partition.from_partition(G, [{ *G.nodes }])  # trivial partition (all nodes in one community)
 
     # To compare properly, we use the freeze function, so that we can compare sets, where the order doesn't matter.
@@ -180,9 +180,9 @@ def test_singleton_partition() -> None:
     G = nx.generators.classic.complete_graph(5)
     H = nx.generators.barbell_graph(5, 2)
 
-    𝓟: Partition[int] = singleton_partition(E)
-    𝓠: Partition[int] = singleton_partition(G)
-    𝓡: Partition[int] = singleton_partition(H)
+    𝓟: Partition[int] = Partition.singleton_partition(E)
+    𝓠: Partition[int] = Partition.singleton_partition(G)
+    𝓡: Partition[int] = Partition.singleton_partition(H)
 
     assert 𝓟.as_set() == freeze([])
     assert 𝓠.as_set() == freeze([{0}, {1}, {2}, {3}, {4}])
