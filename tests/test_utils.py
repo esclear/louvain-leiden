@@ -23,14 +23,19 @@ def test_partition_creation() -> None:
     𝓠 = Partition.from_partition(G, [{0, 1, 2, 3, 4}])
     assert 𝓠 is not None
     assert 𝓠.communities == ({0, 1, 2, 3, 4},)
+    assert 𝓠.degree_sum(0) == 5 * 4
 
     𝓡 = Partition.from_partition(G, [{0}, {1}, {2}, {3}, {4}])
     assert 𝓡 is not None
     assert 𝓡.communities == ({0}, {1}, {2}, {3}, {4})
+    assert 𝓡.degree_sum(0) == 4
 
     𝓢 = Partition.from_partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
     assert 𝓢 is not None
     assert 𝓢.communities == ({0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11})
+    assert 𝓢.degree_sum(0) == 21
+    assert 𝓢.degree_sum(5) == 4
+    assert 𝓢.degree_sum(7) == 21
 
     assert len(𝓟) == 0
     assert len(𝓠) == 1
@@ -49,7 +54,7 @@ def test_partition_creation() -> None:
         Partition.from_partition(G, [{0, 1, 2}, {2, 3, 4}])
 
 
-def test_partition_moving() -> None:
+def test_partition_node_moving() -> None:
     G = nx.generators.classic.complete_graph(5)
     comms = [{0, 1, 2, 3}, {4}]
 
@@ -61,15 +66,26 @@ def test_partition_moving() -> None:
     # Now, verify that both the communities and the membership of node 4 are correct:
     assert 𝓟.node_community(4) == {4}
     assert 𝓟.as_set() == freeze([{0, 1, 2, 3}, {4}])
+    assert 𝓟.degree_sum(0) == 4 * 4
+    assert 𝓟.degree_sum(4) == 4
 
     assert 𝓠.node_community(4) == {4}
     assert 𝓠.as_set() == freeze([{1, 2, 3}, {4}, {0}])
+    assert 𝓠.degree_sum(0) == 4
+    assert 𝓠.degree_sum(1) == 3 * 4
+    assert 𝓠.degree_sum(4) == 4
 
     assert 𝓡.node_community(4) == {0, 4}
     assert 𝓡.as_set() == freeze([{1, 2, 3}, {0, 4}])
+    assert 𝓡.degree_sum(0) == 2 * 4
+    assert 𝓡.degree_sum(1) == 3 * 4
+    assert 𝓡.degree_sum(4) == 2 * 4
 
     assert 𝓢.node_community(4) == {0, 1, 2, 3, 4}
     assert 𝓢.as_set() == freeze([{0, 1, 2, 3, 4}])
+    assert 𝓢.degree_sum(0) == 5 * 4
+    assert 𝓢.degree_sum(1) == 5 * 4
+    assert 𝓢.degree_sum(4) == 5 * 4
 
 
 def test_freeze() -> None:

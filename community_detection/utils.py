@@ -171,6 +171,11 @@ class Partition(Generic[T]):
         """
         return tuple(filter(lambda s: len(s) > 0, self._sets))
 
+    # Here, we also permit a covariant type variable as a function parameter, as this is a pure read-only function (c.f. node_community).
+    def degree_sum(self, v: T) -> int:  # type: ignore
+        """Get the sum of node degrees of nodes in the community that `v` belongs to."""
+        return self._partition_degree_sums[self._node_part[v]]
+
 
 def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
     """
