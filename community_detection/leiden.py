@@ -83,7 +83,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
         # If we can achieve a strict improvement
         if 𝛥𝓗 > 0:
             # Move node v to community Cₘ
-            𝓟 = 𝓟.move_node(v, Cₘ)
+            𝓟.move_node(v, Cₘ)
 
             # Identify neighbors of v that are not in Cₘ
             N = {u for u in G.neighbors(v) if u not in Cₘ}
@@ -148,6 +148,6 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             Cₙ = choices(communities, weights=weights, k=1)[0][0]
 
             # And move v there
-            𝓟 = 𝓟.move_node(v, Cₙ)
+            𝓟.move_node(v, Cₙ)
 
     return 𝓟

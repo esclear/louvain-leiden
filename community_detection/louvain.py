@@ -55,7 +55,7 @@ def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partitio
 
             # If we get a strictly better value, assign v to community Cₘ
             if 𝛥𝓗 > 0:
-                𝓟 = 𝓟.move_node(v, Cₘ)
+                𝓟.move_node(v, Cₘ)
 
         # If no further improvement can be made, we're done and return the current partition
         if 𝓗(G, 𝓟) <= 𝓗ₒ:

@@ -101,42 +101,41 @@ class Partition(Generic[T]):
     # for the signatures of move_node and node_community down below.
     def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:  # type: ignore
         """Move node v from its current community in this partition to the given target community."""
-        sets, node_part, degree_sums = copy.deepcopy(self._sets), self._node_part.copy(), self._partition_degree_sums.copy()
         # Determine the index of the community that v was in initially
-        source_partition_idx = node_part[v]
+        source_partition_idx = self._node_part[v]
 
         # If the target set is non-empty, i.e. an existing community, determine its index in _sets
         if len(target) > 0:
             # Get any element of the target set …
             el = next(iter(target))
             # … and query its index in the _sets list
-            target_partition_idx = node_part[el]
+            target_partition_idx = self._node_part[el]
         # Otherwise, create a new (currently empty) partition and get its index.
         else:
-            target_partition_idx = len(sets)
-            sets.append(set())
-            degree_sums.append(0)
+            target_partition_idx = len(self._sets)
+            self._sets.append(set())
+            self._partition_degree_sums.append(0)
 
         # Remove `v` from its old community and place it into the target partition
-        sets[source_partition_idx].discard(v)
-        sets[target_partition_idx].add(v)
+        self._sets[source_partition_idx].discard(v)
+        self._sets[target_partition_idx].add(v)
         # Also update the sum of node degrees in that partition
         deg_v = self.G.degree[v]
-        degree_sums[source_partition_idx] -= deg_v
-        degree_sums[target_partition_idx] += deg_v
+        self._partition_degree_sums[source_partition_idx] -= deg_v
+        self._partition_degree_sums[target_partition_idx] += deg_v
 
         # Update v's entry in the index lookup table
-        node_part[v] = target_partition_idx
+        self._node_part[v] = target_partition_idx
 
         # If the original partition is empty now, that we removed v from it, remove it and adjust the indexes in _node_part
-        if len(sets[source_partition_idx]) == 0:
-            # Remove the now empty set from `sets`
-            sets.pop(source_partition_idx)
-            degree_sums.pop(source_partition_idx)
+        if len(self._sets[source_partition_idx]) == 0:
+            # Remove the now empty set from `self._sets`
+            self._sets.pop(source_partition_idx)
+            self._partition_degree_sums.pop(source_partition_idx)
             # And adjust the indices in the lookup table
-            node_part = {v: (i if i < source_partition_idx else i - 1) for v, i in node_part.items()}
+            self._node_part = {v: (i if i < source_partition_idx else i - 1) for v, i in self._node_part.items()}
 
-        return Partition(self.G, sets, node_part, degree_sums)
+        return self
 
     # We ignore the typing check for the following function, as it is only a read-only function:
     # Using a covariant type variable as a function parameter (as we do here with T) can cause problems.
