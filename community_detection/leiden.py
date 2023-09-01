@@ -62,7 +62,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
 def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
     """
     Perform fast local node moves to communities to improve the partition's quality.
-    
+
     For every node, greedily move it to a neighboring community, maximizing the improvement in the partition's quality.
     """
     # Create a queue to visit all nodes in random order.

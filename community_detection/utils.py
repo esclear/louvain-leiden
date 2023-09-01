@@ -25,12 +25,14 @@ T = TypeVar("T", covariant=True)
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
-    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int]):
+    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int]):
         """
         Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
 
         This constructor is meant for internal use only, please use `Partition.from_partition` instead.
         """
+        assert G.number_of_nodes() == len(node_part), "node_part size doesn't match number of nodes."
+        assert degree_sums is not None, "No degree_sums given!"
         # Remember the graph (i.e. a reference to it)
         self.G = G
 
@@ -43,6 +45,8 @@ class Partition(Generic[T]):
         # For faster moving of nodes, store for each node the community it belongs to.
         # This is a dict, mapping each node to its community (the community's index in self._sets).
         self._node_part = node_part
+
+        self._partition_degree_sums = degree_sums
 
     @classmethod
     def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]) -> Partition[T]:
@@ -58,17 +62,28 @@ class Partition(Generic[T]):
         # (The order of nested comprehensions is a bit unintuitive in python.)
         node_part = {v: idx for idx, com in enumerate(sets) for v in com}
 
-        return cls(G, sets, node_part)
+        partition_degree_sums = [sum(map(lambda t: t[1], G.degree(C))) for C in sets]
+
+        return cls(G, sets, node_part, partition_degree_sums)
 
     @classmethod
     def singleton_partition(cls, G: Graph) -> Partition[T]:
         """Create a singleton partition, in which each community consists of exactly one vertex."""
-        # Generate a new partition
-        sets = [{v} for v in G.nodes]
-        # Together with a lookup table / dict
-        node_part = {v: i for i, s in enumerate(sets) for v in iter(s)}
+        # Generate a list of triples containing all necessary information: The community (a singleton set), a (node, index) tuple
+        # for the corresponding entry in the node_part lookup dict, and the degree.
+        data = [({v}, (v, i), G.degree(v)) for i, v in enumerate(G.nodes)]
+        if not data:
+            # Handle the empty graphs -> return empty lists and empty lookup dict
+            sets, node_part, degree_sums = [], dict(), []
+        else:
+            # Otherwise, split `data` into the respective representations we need to create the partition:
+            # Sets becomes the list of (singleton) communities, part_tuples the list of (node, index) tuples and degree_sums a
+            # list of node degrees.
+            sets, part_tuples, degree_sums = map(list, zip(*data))
+            # From the list of tuples, create the dictionary we need
+            node_part = dict(part_tuples)
 
-        return cls(G, sets, node_part)
+        return cls(G, sets, node_part, degree_sums)
 
     @staticmethod
     def is_partition(G: Graph, 𝓟: Collection[Collection[T]]) -> bool:
@@ -86,7 +101,7 @@ class Partition(Generic[T]):
     # for the signatures of move_node and node_community down below.
     def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:  # type: ignore
         """Move node v from its current community in this partition to the given target community."""
-        sets, node_part = copy.deepcopy(self._sets), self._node_part.copy()
+        sets, node_part, degree_sums = copy.deepcopy(self._sets), self._node_part.copy(), self._partition_degree_sums.copy()
         # Determine the index of the community that v was in initially
         source_partition_idx = node_part[v]
 
@@ -100,10 +115,15 @@ class Partition(Generic[T]):
         else:
             target_partition_idx = len(sets)
             sets.append(set())
+            degree_sums.append(0)
 
         # Remove `v` from its old community and place it into the target partition
         sets[source_partition_idx].discard(v)
         sets[target_partition_idx].add(v)
+        # Also update the sum of node degrees in that partition
+        deg_v = self.G.degree[v]
+        degree_sums[source_partition_idx] -= deg_v
+        degree_sums[target_partition_idx] += deg_v
 
         # Update v's entry in the index lookup table
         node_part[v] = target_partition_idx
@@ -112,10 +132,11 @@ class Partition(Generic[T]):
         if len(sets[source_partition_idx]) == 0:
             # Remove the now empty set from `sets`
             sets.pop(source_partition_idx)
+            degree_sums.pop(source_partition_idx)
             # And adjust the indices in the lookup table
             node_part = {v: (i if i < source_partition_idx else i - 1) for v, i in node_part.items()}
 
-        return Partition(self.G, sets, node_part)
+        return Partition(self.G, sets, node_part, degree_sums)
 
     # We ignore the typing check for the following function, as it is only a read-only function:
     # Using a covariant type variable as a function parameter (as we do here with T) can cause problems.
