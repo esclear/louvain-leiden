@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from copy import copy
 from typing import Generic, TypeVar
 
 import networkx as nx
@@ -24,7 +25,7 @@ class QualityMetric(ABC, Generic[T]):
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
         if not baseline:
             baseline = self(G, 𝓟)
-        moved = 𝓟.move_node(v, target)
+        moved = copy(𝓟).move_node(v, target)
         return self(G, moved) - baseline
 
 

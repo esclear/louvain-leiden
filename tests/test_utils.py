@@ -1,3 +1,4 @@
+from copy import copy
 from typing import cast
 
 import networkx as nx
@@ -59,9 +60,9 @@ def test_partition_node_moving() -> None:
     comms = [{0, 1, 2, 3}, {4}]
 
     𝓟 = Partition.from_partition(G, comms)  # Start with the partition indicated in P and do each of the following:
-    𝓠 = 𝓟.move_node(0, set())               # a) Move node 0 to its own community (i.e. nothing should change)
-    𝓡 = 𝓟.move_node(0, {4})                 # b) Move node 0 to the community which contains node 4
-    𝓢 = 𝓟.move_node(4, {0, 1, 2, 3})        # c) Move node 0 to the community containing all other nodes
+    𝓠 = copy(𝓟).move_node(0, set())         # a) Move node 0 to its own community (i.e. nothing should change)
+    𝓡 = copy(𝓟).move_node(0, {4})           # b) Move node 0 to the community which contains node 4
+    𝓢 = copy(𝓟).move_node(4, {0, 1, 2, 3})  # c) Move node 0 to the community containing all other nodes
 
     # Now, verify that both the communities and the membership of node 4 are correct:
     assert 𝓟.node_community(4) == {4}

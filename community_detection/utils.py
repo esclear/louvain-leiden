@@ -146,6 +146,16 @@ class Partition(Generic[T]):
         """Get the community the node v is currently part of."""
         return self._sets[self._node_part[v]]
 
+    def __copy__(self) -> Self:
+        """Create a copy of this partition object."""
+        cls = self.__class__
+        cpy = cls.__new__(cls)
+        cpy.G = self.G
+        cpy._sets = copy.deepcopy(self._sets)
+        cpy._node_part = self._node_part.copy()
+        cpy._partition_degree_sums = self._partition_degree_sums.copy()
+        return cpy
+
     def __iter__(self) -> Iterator[set[T]]:
         """Make a Partition object iterable, returning an iterator over the communities."""
         return filter(lambda s: len(s) > 0, self._sets)
