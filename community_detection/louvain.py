@@ -28,16 +28,14 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
         # First phase: Move nodes locally
         𝓟 = move_nodes(G, 𝓟, 𝓗)
 
-        # When every community consists of a single node, terminate,
-        # returning the flattened partition, as given by 𝓟.
-        if len(𝓟) == len(G.nodes):
-            return Partition.from_partition(G_orig, flatₚ(𝓟))
+        # When every community consists of a single node, terminate, returning the flattened partition, as given by 𝓟.
+        if len(𝓟) == G.order():
+            return 𝓟.flatten()
 
         # Second phase: Aggregation of the network
         # Create the aggregate graph of G based on the partition 𝓟
         G = aggregate_graph(G, 𝓟)
-        # And update 𝓟 to be a singleton partition of G, i.e. every node in the aggregate graph G
-        # is assigned to its own community.
+        # And update 𝓟 to be a singleton partition of G, i.e. every node in the aggregate graph G is assigned to its own community.
         𝓟 = Partition.singleton_partition(G)
 
 
