@@ -148,6 +148,33 @@ def test_flat_partition() -> None:
     assert freeze(flatₚ(𝓣)) == freeze([ {0, 1, 2, 3, 4} , {5, 6}, {7, 8, 9}])
 
 
+def test_partition_flatten() -> None:
+    # First, check with a simple graph
+    G = nx.generators.classic.complete_graph(10)
+
+    𝓟: Partition[int] = Partition.singleton_partition(G)                         # singleton partition
+    𝓠 = Partition.from_partition(G, [{ *G.nodes }])                              # trivial partition (all nodes in one community)
+    𝓡 = Partition.from_partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])  # non-trivial partition
+
+    # For non-aggregate partitions, the flattened partition should equal the original partition
+    assert 𝓟.flatten() == 𝓟
+    assert 𝓠.flatten() == 𝓠
+    assert 𝓡.flatten() == 𝓡
+
+    # Calculate an aggregate graph by repeatedly merging, starting with the non-trivial partition from above:
+    H = aggregate_graph(G, 𝓡)
+    # On the aggregate graph H, define a new partition, consisting of three communities.
+    # It combines the nodes 0..4, 5..6, and 7..9 of the *underlying graph* G into one community each.
+    # That is, combine sets 0 and 1 ({0,1,2} and {3,4}), take set 2 ({5,6}), and combine sets 3 and 4 ({7,8} and {9}):
+    𝓢 = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
+
+    I = aggregate_graph(H, 𝓢)
+    𝓣 = Partition.singleton_partition(I)
+
+    𝓕 = 𝓣.flatten()
+    assert freeze(𝓕.communities) == freeze([[0, 1, 2, 3, 4], [5, 6], [7, 8, 9]])
+
+
 def test_argmax() -> None:
     with pytest.raises(ValueError):
         argmax(lambda x: x, []) is None

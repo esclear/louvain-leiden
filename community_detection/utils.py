@@ -186,6 +186,39 @@ class Partition(Generic[T]):
         """Get the sum of node degrees of nodes in the community that `v` belongs to."""
         return self._partition_degree_sums[self._node_part[v]]
 
+    @staticmethod
+    def __collect_nodes(G: Graph, nodes: Collection[int | T]) -> list[T]:
+        """Collect the nodes in the underlying graph that correspond to the given `nodes` in the aggregate graph `G`."""
+        if "parent_partition" not in G.graph or "parent_graph" not in G.graph:
+            # If none exists (i.e. we have the original graph) return G and the node we have found
+            return list(nodes)
+        else:
+            # Otherwise, get the parent graph
+            𝓟 = G.graph["parent_partition"]
+            H = G.graph["parent_graph"]
+            # For every node in `nodes`, collect its child nodes using recursive calls and combine them into a single list
+            return sum((Partition.__collect_nodes(H, G.nodes[n]["nodes"]) for n in nodes), [])
+
+    @staticmethod
+    def __find_original_graph(G: Graph) -> tuple[Graph, list[T]]:
+        """Find the original graph of an aggregate partition."""
+        if "parent_graph" in G.graph:
+            return Partition.__find_original_graph(G.graph["parent_graph"])
+        else:
+            return G
+
+    def flatten(self) -> Partition[T]:
+        """Flatten the partition, producing a partition of the original graph."""
+        # If this is not an aggregate graph, return self.
+        if "parent_graph" not in self.G.graph or "parent_partition" not in self.G.graph:
+            return self
+
+        # Otherwise
+        G = Partition.__find_original_graph(self.G)
+        𝓟 = [Partition.__collect_nodes(self.G, C) for C in self._sets]
+
+        return Partition.from_partition(G, 𝓟)
+
 
 def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
     """
@@ -264,7 +297,7 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T], weight: str | None = None) -> 
     communities = list(𝓟.communities)
 
     # Create graph H that will become the aggregate graph
-    H = Graph()
+    H = Graph(parent_graph=G, parent_partition=𝓟)
 
     # For every community, add a node in H, also recording the nodes
     for i, C in enumerate(communities):
