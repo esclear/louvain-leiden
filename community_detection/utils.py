@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 from functools import reduce
+from itertools import combinations_with_replacement
 from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
     Callable,
     Collection,
@@ -14,7 +15,7 @@ from typing import (  # noqa: UP035 # recommends to import Callable from collect
     cast,
 )
 
-from networkx import Graph, MultiGraph
+from networkx import Graph, cut_size
 from networkx.algorithms.community import community_utils
 
 S = TypeVar("S")
@@ -178,7 +179,7 @@ class Partition(Generic[T]):
 
         We're using tuples as an immutable representation of a set / list, that is, the order of entries is of no importance.
         """
-        return tuple(filter(lambda s: len(s) > 0, self._sets))
+        return tuple(self._sets)
 
     # Here, we also permit a covariant type variable as a function parameter, as this is a pure read-only function (c.f. node_community).
     def degree_sum(self, v: T) -> int:  # type: ignore
@@ -250,7 +251,7 @@ def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tup
     return (opt, val, idx)
 
 
-def aggregate_graph(G: Graph, 𝓟: Partition[T]) -> MultiGraph:
+def aggregate_graph(G: Graph, 𝓟: Partition[T], weight: str | None = None) -> Graph:
     """
     Create an aggregate graph of the graph G with regards to the partition 𝓟.
 
@@ -258,13 +259,22 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T]) -> MultiGraph:
     node. Every edge between two nodes a and b is represented by an edge in the multigraph, between the nodes that
     represent the communities that a and b, respectively, are members of.
     """
-    H = MultiGraph()
-    H.add_nodes_from([frozenset(C) for C in 𝓟])
+    # Determine the numer of communities and get a list of the communities
+    n_c = len(𝓟)
+    communities = list(𝓟.communities)
 
-    for u, v in G.edges():
-        C = frozenset(𝓟.node_community(u))
-        D = frozenset(𝓟.node_community(v))
+    # Create graph H that will become the aggregate graph
+    H = Graph()
 
-        H.add_edge(C, D)
+    # For every community, add a node in H, also recording the nodes
+    for i, C in enumerate(communities):
+        # TODO: WEIGHT MUST BE FIXED!
+        H.add_node(i, weight=len(C), nodes=frozenset(C))
+
+    # For every pair of communities, determine the total weight of edges between them.
+    # This also includes edges between two nodes in the same community, which will form a loop in the aggregate graph.
+    for c_idx, d_idx in combinations_with_replacement(range(n_c), 2):
+        C, D = communities[c_idx], communities[d_idx]
+        H.add_edge(c_idx, d_idx, weight=cut_size(G, C, D, weight=weight))
 
     return H

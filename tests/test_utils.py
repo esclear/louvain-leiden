@@ -139,11 +139,8 @@ def test_flat_partition() -> None:
 
     # On the aggregate graph H, define a new partition, consisting of three communities.
     # It combines the nodes 0..4, 5..6, and 7..9 of the *underlying graph* G into one community each.
-    𝓢: Partition[frozenset[int]] = Partition.from_partition(H, [
-        { frozenset({0, 1, 2}), frozenset({3, 4}) },
-        { frozenset({5, 6}) },
-        { frozenset({7, 8}), frozenset({9}) }
-    ])
+    # That is, combine sets 0 and 1 ({0,1,2} and {3,4}), take set 2 ({5,6}), and combine sets 3 and 4 ({7,8} and {9}):
+    𝓢: Partition[frozenset[int]] = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
 
     # Also check that we can produce a (new) partition by providing another partition
     𝓣: Partition[frozenset[int]] = Partition.from_partition(H, 𝓢)
@@ -179,17 +176,18 @@ def test_aggregate_graph() -> None:
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)
     assert len(H.nodes()) == 3
-    assert len(H.edges()) == 10
+    assert len(H.edges()) == 6
 
     # Verify that the nodes of the aggregate graph correspond to the communities
-    assert set(H.nodes()) == freeze(communities)
+    assert list(H.nodes(data="nodes")) == [(0, frozenset({0})), (1, frozenset({1, 2})), (2, frozenset({3,4}))]
     # Check that the inter-community-edges are correct
-    assert H.number_of_edges(frozenset({0}),    frozenset({1, 2})) == 2
-    assert H.number_of_edges(frozenset({0}),    frozenset({3, 4})) == 2
-    assert H.number_of_edges(frozenset({1, 2}), frozenset({3, 4})) == 4
+    assert H[0][1]["weight"] == 2
+    assert H[0][2]["weight"] == 2
+    assert H[1][2]["weight"] == 4
     # Also check that self-loops for the communities are correct
-    assert H.number_of_edges(frozenset({1, 2}), frozenset({1, 2})) == 1
-    assert H.number_of_edges(frozenset({3, 4}), frozenset({3, 4})) == 1
+    assert H[0][0]["weight"] == 0
+    assert H[1][1]["weight"] == 1
+    assert H[2][2]["weight"] == 1
 
 
 def test_singleton_partition() -> None:
