@@ -95,10 +95,9 @@ class Partition(Generic[T]):
         return result
 
     # In normal circumstances, using covariant type variables as function parameter (as we do here with T) can cause problems.
-    # (see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
-    # However, ths is not a problem for move_node and node_community, as the type variable T is only used as a type marker and
-    # we don't rely on *any* functionality of T at all. Thus, to keep the user interface easy to use, we ignore the type check
-    # for the signatures of move_node and node_community down below.
+    # (especially for collections; see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
+    # However, ths is not a problem for move_node, as we don't add new entries to the partition and don't rely on any functionality of the
+    # type T, which is only used as a type marker here.
     def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:  # type: ignore
         """Move node v from its current community in this partition to the given target community."""
         # Determine the index of the community that v was in initially
@@ -275,14 +274,15 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T], weight: str | None = None) -> 
     # Determine the numer of communities and get a list of the communities
     n_c = len(𝓟)
     communities = list(𝓟.communities)
+    node_weights = G.nodes.data("", default=1)
 
     # Create graph H that will become the aggregate graph
     H = Graph(parent_graph=G, parent_partition=𝓟)
 
     # For every community, add a node in H, also recording the nodes
     for i, C in enumerate(communities):
-        # TODO: WEIGHT MUST BE FIXED!
-        H.add_node(i, weight=len(C), nodes=frozenset(C))
+        community_weight = sum(node_weights[v] for v in C)
+        H.add_node(i, weight=community_weight, nodes=frozenset(C))
 
     # For every pair of communities, determine the total weight of edges between them.
     # This also includes edges between two nodes in the same community, which will form a loop in the aggregate graph.
