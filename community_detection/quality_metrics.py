@@ -36,12 +36,12 @@ class Modularity(QualityMetric[T], Generic[T]):
 
     def __init__(self, γ: float = 0.25):
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
-        self.γ = γ
+        self.γ: float = γ
 
     def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
         node_degrees = dict(G.degree(weight=None))
-        two_m = sum(node_degrees.values())
+        two_m = 2 * G.number_of_edges()
 
         # For empty graphs (without edges) return NaN, as Modularity is not defined then, due to the division by `2*m`.)
         if two_m == 0:
@@ -68,7 +68,7 @@ class CPM(QualityMetric[T], Generic[T]):
 
     def __init__(self, γ: float = 0.25):
         """Create a new instance of the Constant Potts Model with the given resolution parameter γ."""
-        self.γ = γ
+        self.γ: float = γ
 
     def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""

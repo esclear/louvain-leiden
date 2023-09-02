@@ -22,9 +22,6 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
     if 𝓟 is None:
         𝓟 = Partition.singleton_partition(G)
 
-    # Remember the original graph
-    G_orig = G
-
     while True:
         # First phase: Move nodes locally
         𝓟 = move_nodes(G, 𝓟, 𝓗)

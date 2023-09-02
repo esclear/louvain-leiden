@@ -4,9 +4,7 @@ from typing import cast
 import networkx as nx
 import pytest
 
-from community_detection.leiden import leiden
-from community_detection.louvain import louvain
-from community_detection.utils import Nested, Partition, aggregate_graph, argmax, freeze, recursive_size
+from community_detection.utils import Partition, aggregate_graph, argmax, freeze, recursive_size
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off

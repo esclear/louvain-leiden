@@ -41,8 +41,6 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
     if 𝓟 is None:
         𝓟 = Partition.from_partition(G, [{v for v in G.nodes}])
 
-    # Remember the original graph
-    G_orig = G
     while True:
         𝓟 = move_nodes_fast(G, 𝓟, 𝓗)
 

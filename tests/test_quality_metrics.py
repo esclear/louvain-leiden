@@ -44,8 +44,9 @@ def test_cpm_trivial_values() -> None:
     assert   0.00 == 𝓗(C, 𝓠)  # Complete graph K_10 with singleton partition has CPM 0
     assert  33.75 == 𝓗(C, 𝓟)  # The graph K_10 with the trivial partition has CPM 33.75 (improves singleton partition)
 
+
 def test_cpm_example_from_material() -> None:
-    """"""
+    """Compare the calculation of the CPM metric with known-good values from the source material."""
     # Produce the weighted (4,0)-barbell graph described in the supplementary information of "louvain to leiden", p. 6
     B = nx.Graph()
     B.add_weighted_edges_from([

@@ -1,8 +1,7 @@
 """This module provides some useful types and functions used in the algorithms implementations."""
 from __future__ import annotations
 
-import copy
-from functools import reduce
+from copy import deepcopy
 from itertools import combinations_with_replacement
 from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
     Callable,
@@ -151,7 +150,7 @@ class Partition(Generic[T]):
         cls = self.__class__
         cpy = cls.__new__(cls)
         cpy.G = self.G
-        cpy._sets = copy.deepcopy(self._sets)
+        cpy._sets = deepcopy(self._sets)
         cpy._node_part = self._node_part.copy()
         cpy._partition_degree_sums = self._partition_degree_sums.copy()
         return cpy
@@ -194,7 +193,6 @@ class Partition(Generic[T]):
             return list(nodes)
         else:
             # Otherwise, get the parent graph
-            𝓟 = G.graph["parent_partition"]
             H = G.graph["parent_graph"]
             # For every node in `nodes`, collect its child nodes using recursive calls and combine them into a single list
             return sum((Partition.__collect_nodes(H, G.nodes[n]["nodes"]) for n in nodes), [])
