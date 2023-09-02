@@ -6,6 +6,7 @@ guaranteeing well-connected communities" by V.A. Traag, L. Waltman and N.J. van 
 """
 
 from typing import TypeVar
+from random import shuffle
 
 from networkx import Graph
 
@@ -46,7 +47,9 @@ def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partitio
         # Store current ("o" for "old") quality function value
         𝓗ₒ = 𝓗(G, 𝓟)
 
-        for v in G.nodes:
+        Q = list(G.nodes)
+        shuffle(Q)
+        for v in Q:
             # Find best community for node `v` to be in, potentially creating a new community.
             # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
             (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C, baseline=𝓗ₒ), [*𝓟, set()])
