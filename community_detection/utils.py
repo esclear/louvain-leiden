@@ -145,7 +145,7 @@ class Partition(Generic[T]):
         """Get the community the node v is currently part of."""
         return self._sets[self._node_part[v]]
 
-    def __copy__(self) -> Self:
+    def __copy__(self) -> Partition[T]:
         """Create a copy of this partition object."""
         cls = self.__class__
         cpy = cls.__new__(cls)
@@ -157,7 +157,7 @@ class Partition(Generic[T]):
 
     def __iter__(self) -> Iterator[set[T]]:
         """Make a Partition object iterable, returning an iterator over the communities."""
-        return filter(lambda s: len(s) > 0, self._sets)
+        return self._sets.__iter__()
 
     def __contains__(self, nodes: object) -> bool:
         """Return whether a given set of nodes is part of the partition or not."""

@@ -13,9 +13,7 @@ PRECISION = 1e-15
 # fmt: off
 
 def test_modularity_trivial_values() -> None:
-    """
-    Test modularity calculation for special graphs and partitions to see if the values match our expectation.
-    """
+    """Test modularity calculation for special graphs and partitions to see if the values match our expectation."""
     C = nx.complete_graph(10)
     𝓟 = Partition.from_partition(C, [{i for i in range(10)}])
     E = nx.empty_graph(10)
@@ -32,9 +30,7 @@ def test_modularity_trivial_values() -> None:
 
 
 def test_cpm_trivial_values() -> None:
-    """
-    Test modularity calculation for special graphs and partitions to see if the values match the expectation.
-    """
+    """Test CPM calculation for some trivial  graphs and partitions to see if the values match the expectation."""
     C = nx.complete_graph(10)
     𝓟 = Partition.from_partition(C, [{i for i in range(10)}])
     E = nx.empty_graph(10)
@@ -48,19 +44,39 @@ def test_cpm_trivial_values() -> None:
     assert   0.00 == 𝓗(C, 𝓠)  # Complete graph K_10 with singleton partition has CPM 0
     assert  33.75 == 𝓗(C, 𝓟)  # The graph K_10 with the trivial partition has CPM 33.75 (improves singleton partition)
 
+def test_cpm_example_from_material() -> None:
+    """"""
+    # Produce the weighted (4,0)-barbell graph described in the supplementary information of "louvain to leiden", p. 6
+    B = nx.Graph()
+    B.add_weighted_edges_from([
+        (0, 1, 3),
+        (0, 2, 1.5), (0, 3, 1.5), (0, 4, 1.5), (2, 3, 3), (2, 4, 3), (3, 4, 3),
+        (1, 5, 1.5), (1, 6, 1.5), (1, 7, 1.5), (5, 6, 3), (5, 7, 3), (6, 7, 3)
+    ])
+
+    𝓞 = Partition.from_partition(B, [{0, 2, 3, 4},{1, 5, 6, 7}])
+    𝓝 = Partition.from_partition(B, [{2, 3, 4}, {0, 1}, {5, 6, 7}])
+
+    𝓗: QualityMetric[int] = CPM(1.0)
+
+    # Values calculated manually for and the (4,0)-barbell graph:
+    # Unweighted (does not correspond to supplementary information)
+    assert 𝓗(B, 𝓞) == 0
+    assert 𝓗(B, 𝓝) == 0
+    # Weighted (as in the supplementary material)
+    assert 𝓗(B, 𝓞, "weight") == 15
+    assert 𝓗(B, 𝓝, "weight") == 14
+
 
 def test_modularity_comparison_networkx() -> None:
-    """
-    This test compares our implementation of Modularity and the Louvain algorithm with the ones in NetworkX.
-    """
+    """Compare our implementation of Modularity and the Louvain algorithm with the ones in NetworkX."""
     # This test uses the so-called Zachary’s Karate Club graph, which represents the social interactions in a Karate
     # sports club. The nodes represent two trainers and 32 students, the edges represent interactions between two
     # people.
     G = nx.karate_club_graph()
 
     # We use modularity as quality function, with a resolution of 1.
-    𝓗: QualityMetric[int] # Type annotation for 𝓗 below
-    𝓗 = Modularity(1)
+    𝓗: QualityMetric[int] = Modularity(1)
     𝓟 = louvain(G, 𝓗)
 
     # We compare the result to a partition calculated by the NetworkX library.

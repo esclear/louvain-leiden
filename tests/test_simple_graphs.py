@@ -19,7 +19,7 @@ def test_louvain_barbell_modularity() -> None:
 
     This graph consists of two complete graphs K_5, connected by a path of length 2.
     """
-    G = nx.generators.classic.barbell_graph(5, 2)
+    G = nx.generators.barbell_graph(5, 2)
 
     𝓗: QualityMetric[int]  # Type annotation for 𝓗 below
     𝓗 = Modularity(1)
@@ -34,7 +34,7 @@ def test_leiden_barbell_modularity() -> None:
 
     This graph consists of two complete graphs K_5, connected by a path of length 2.
     """
-    G = nx.generators.classic.barbell_graph(5, 2)
+    G = nx.generators.barbell_graph(5, 2)
 
     𝓗: QualityMetric[int]  # Type annotation for 𝓗 below
     𝓗 = Modularity(1.5)
@@ -49,7 +49,7 @@ def test_louvain_barbell_cpm() -> None:
 
     This graph consists of two complete graphs K_5, connected by a path of length 2.
     """
-    G = nx.generators.classic.barbell_graph(5, 2)
+    G = nx.generators.barbell_graph(5, 2)
 
     𝓗: QualityMetric[int]  # Type annotation for 𝓗 below
     # The following resolution parameter for the CPM was found using binary serach on the interval [0.95, 1.05].
@@ -65,7 +65,7 @@ def test_leiden_barbell_cpm() -> None:
 
     This graph consists of two complete graphs K_5, connected by a path of length 2.
     """
-    G = nx.generators.classic.barbell_graph(5, 2)
+    G = nx.generators.barbell_graph(5, 2)
 
     𝓗: QualityMetric[int]  # Type annotation for 𝓗 below
     𝓗 = CPM(0.9999999999999986)

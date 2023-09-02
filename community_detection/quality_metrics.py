@@ -17,16 +17,18 @@ class QualityMetric(ABC, Generic[T]):
     """A metric that, when called, measures the quality of a partition into communities."""
 
     @abstractmethod
-    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
+    def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition as applied to the graph provided."""
         raise NotImplementedError()
 
-    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], baseline: None | float = None) -> float:
+    def delta(
+        self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None, baseline: None | float = None
+    ) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
         if not baseline:
-            baseline = self(G, 𝓟)
+            baseline = self(G, 𝓟, weight)
         moved = copy(𝓟).move_node(v, target)
-        return self(G, moved) - baseline
+        return self(G, moved, weight) - baseline
 
 
 class Modularity(QualityMetric[T], Generic[T]):
@@ -36,7 +38,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
         self.γ = γ
 
-    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
+    def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
         node_degrees = dict(G.degree(weight=None))
         two_m = sum(node_degrees.values())
@@ -68,13 +70,13 @@ class CPM(QualityMetric[T], Generic[T]):
         """Create a new instance of the Constant Potts Model with the given resolution parameter γ."""
         self.γ = γ
 
-    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
+    def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
 
         def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the number of edges within that community:
-            e_c: int = len(nx.induced_subgraph(G, C).edges)
+            e_c: int = nx.induced_subgraph(G, C).size(weight=weight)
             # Also get the number of nodes in this community.
             n_c: int = len(C)
 
