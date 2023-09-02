@@ -6,7 +6,7 @@ import pytest
 
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
-from community_detection.utils import Nested, Partition, aggregate_graph, argmax, flat, flatₚ, freeze, recursive_size
+from community_detection.utils import Nested, Partition, aggregate_graph, argmax, freeze, recursive_size
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
@@ -107,45 +107,6 @@ def test_recursive_size() -> None:
 
     assert recursive_size([[], 1, [2], [[3]]]) == 3
     assert recursive_size([1, 2, 3]) == 3
-
-
-def test_flat() -> None:
-    # Note that '{}' is not an empty set, but an empty dict!
-    assert flat(set()) == set()  # test the input {}
-    assert flat({ 0, 1, 2, 3 }) == {0, 1, 2, 3}  # test the input {0, 1, 2, 3}
-
-    assert flat({ frozenset( set() ) }) == set()  # test the input { set() }
-    assert flat({ frozenset( frozenset( set() ) ) }) == set()  # test the input { { { } } }
-    assert flat({ 0, frozenset( {1} ), frozenset( {2, frozenset({3}) } ) }) == {0, 1, 2, 3}  # test the input { 0, {1}, {2, {3}} }
-
-
-def test_flat_partition() -> None:
-    # flatₚ is called on aggregate graphs, where every node of the aggregate graph represents (potentially arbitrarily nested) sets
-    # of nodes in the original graph.
-
-    # First, check with a simple graph
-    G = nx.generators.classic.complete_graph(10)
-
-    𝓟: Partition[int] = Partition.singleton_partition(G)  # singleton partition
-    𝓠 = Partition.from_partition(G, [{ *G.nodes }])  # trivial partition (all nodes in one community)
-
-    # To compare properly, we use the freeze function, so that we can compare sets, where the order doesn't matter.
-    assert freeze(flatₚ(𝓟)) == freeze([{i} for i in range(10)])
-    assert freeze(flatₚ(𝓠)) == freeze([{i for i in range(10)}])
-
-    # Calculate an aggregate graph by repeatedly merging:
-    𝓡 = Partition.from_partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])
-    H = aggregate_graph(G, 𝓡)
-
-    # On the aggregate graph H, define a new partition, consisting of three communities.
-    # It combines the nodes 0..4, 5..6, and 7..9 of the *underlying graph* G into one community each.
-    # That is, combine sets 0 and 1 ({0,1,2} and {3,4}), take set 2 ({5,6}), and combine sets 3 and 4 ({7,8} and {9}):
-    𝓢: Partition[frozenset[int]] = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
-
-    # Also check that we can produce a (new) partition by providing another partition
-    𝓣: Partition[frozenset[int]] = Partition.from_partition(H, 𝓢)
-
-    assert freeze(flatₚ(𝓣)) == freeze([ {0, 1, 2, 3, 4} , {5, 6}, {7, 8, 9}])
 
 
 def test_partition_flatten() -> None:

@@ -10,7 +10,7 @@ from typing import TypeVar
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, flatₚ
+from .utils import Partition, aggregate_graph, argmax
 
 T = TypeVar("T")
 

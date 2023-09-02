@@ -12,7 +12,7 @@ from typing import TypeVar
 from networkx import Graph, edge_boundary
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, flatₚ, freeze, recursive_size
+from .utils import Partition, aggregate_graph, argmax, freeze, recursive_size
 
 T = TypeVar("T")
 
@@ -49,13 +49,14 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
         # When every community consists of a single node only, terminate, returning the flat partition given by 𝓟
         if len(𝓟) == len(G.nodes):
             # Return the partition 𝓟 in terms of the original graph, G_orig
-            return Partition.from_partition(G_orig, flatₚ(𝓟))
+            return 𝓟.flatten()
 
         𝓟ᵣ = refine_partition(G, 𝓟, 𝓗, θ, γ)
         # Create the aggregate graph of G based on 𝓟ᵣ …
         G = aggregate_graph(G, 𝓟ᵣ)
 
         # … but maintain partition 𝓟
+        # FIXME: <= is not applicable for aggregate graph!
         𝓟 = Partition.from_partition(G, [{v for v in G.nodes if v <= C} for C in 𝓟])
 
 

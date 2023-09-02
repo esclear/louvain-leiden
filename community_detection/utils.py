@@ -238,24 +238,6 @@ def recursive_size(S: Nested[T]) -> int:
     return 1
 
 
-def flat(S: Nested[T]) -> set[T]:
-    """Flatten potentially nested sets into a flattened (non-nested) set."""
-    if isinstance(S, Iterable):
-        return reduce(lambda a, s: a | s, (flat(s) for s in S), set())
-
-    return {S}
-
-
-def flatₚ(𝓟: Partition[Nested[T]]) -> list[set[T]]:
-    """
-    Flatten a partition into a *list* of communities (each of which represented as a set).
-
-    This is used for partitions of aggregate graphs, where multiple nodes have been
-    coalesced into one single node, which is represented by the set of the original nodes.
-    """
-    return [flat(C) for C in 𝓟]
-
-
 def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tuple[T, float, int]:
     """
     Find the arg max with respect to a given objective function over a given list of parameters.
