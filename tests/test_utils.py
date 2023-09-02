@@ -189,6 +189,18 @@ def test_aggregate_graph() -> None:
     assert H[1][1]["weight"] == 1
     assert H[2][2]["weight"] == 1
 
+    # With an additional partition, generate an additional aggregate graph
+    𝓠 = Partition.from_partition(H, [{0, 1}, {2}])
+    J = aggregate_graph(H, 𝓠, "weight")
+
+    # Verify that the nodes of the aggregate graph correspond to the communities
+    assert list(J.nodes(data="nodes")) == [(0, frozenset({0, 1})), (1, frozenset({2}))]
+    # Check that the inter-community-edges are correct
+    assert J[0][1]["weight"] == 6
+    # Also check that self-loops for the communities are correct
+    assert J[0][0]["weight"] == 3
+    assert J[1][1]["weight"] == 1
+
 
 def test_singleton_partition() -> None:
     E = nx.generators.empty_graph(0)
