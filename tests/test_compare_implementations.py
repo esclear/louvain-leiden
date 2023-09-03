@@ -1,3 +1,5 @@
+import random
+
 import networkx as nx
 
 from community_detection.louvain import louvain
@@ -18,20 +20,28 @@ def test_louvain_modularity_comparison_networkx() -> None:
 
     # We use modularity as quality function, with a resolution of 1.
     𝓗: QualityMetric[int] = Modularity(1)
+
+    # As the louvain algorithm is deterministic, seed the RNG with a static value so that tests are reproducible
+    random.seed(0)
+
     𝓟 = louvain(G, 𝓗)
+    𝓟 = Partition.from_partition(G, 𝓟.as_set(), "weight")
+    print(f"Our partition:       {𝓟.as_set()=}")
 
     # We compare the result to a partition calculated by the NetworkX library.
     # Due to the randomized nature of the louvain algorithm, we need to supply the implementation with a seed
     # so that the result stays consistent. Otherwise the calculated communities will change between runs!
-    𝓠 = Partition.from_partition(G, nx.community.louvain_communities(G, weight=None, resolution=1, seed=1))
+    𝓠 = Partition.from_partition(G, nx.community.louvain_communities(G, weight="weight", resolution=1, seed=0), "weight")
+    print(f"Reference partition: {𝓠.as_set()=}")
+
     # The following function uses NetworkX' implementation of modularity and makes it available so that we can use it
     # as a reference implementaiton to compare the values calculated by our implementation against.
     def nxMod(𝓡: Partition[int]) -> float:
-        mod: float = nx.community.modularity(G, 𝓡.as_set(), weight=None, resolution=1)
+        mod: float = nx.community.modularity(G, 𝓡.as_set(), weight="weight", resolution=1)
         return mod
 
     # Save modularities calculated by our and NX' modularity functions of partitions calculated by us and NetworkX.
-    olom, olnm, nlom, nlnm = 𝓗(G, 𝓟), nxMod(𝓟), 𝓗(G, 𝓠), nxMod(𝓠)
+    olom, olnm, nlom, nlnm = 𝓗(G, 𝓟, "weight"), nxMod(𝓟), 𝓗(G, 𝓠, "weight"), nxMod(𝓠)
 
     print("Final modularities   | our Louvain impl. | NX' Louvain impl.")
     print(f"Our modularity impl. |      {olom:03.10f} |      {nlom:03.10f} ")

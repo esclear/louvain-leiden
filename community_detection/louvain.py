@@ -20,7 +20,7 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
     """Perform the Louvain algorithm for community detection."""
     # If there is no partition given, start with every node in its' own community
     if 𝓟 is None:
-        𝓟 = Partition.singleton_partition(G)
+        𝓟 = Partition.singleton_partition(G, "weight")
 
     while True:
         # First phase: Move nodes locally
@@ -32,9 +32,9 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
 
         # Second phase: Aggregation of the network
         # Create the aggregate graph of G based on the partition 𝓟
-        G = aggregate_graph(G, 𝓟)
+        G = aggregate_graph(G, 𝓟, "weight")
         # And update 𝓟 to be a singleton partition of G, i.e. every node in the aggregate graph G is assigned to its own community.
-        𝓟 = Partition.singleton_partition(G)
+        𝓟 = Partition.singleton_partition(G, "weight")
 
 
 def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
@@ -42,19 +42,19 @@ def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partitio
     # This is the python form of a "do-while" loop
     while True:
         # Store current ("o" for "old") quality function value
-        𝓗ₒ = 𝓗(G, 𝓟)
+        𝓗ₒ = 𝓗(G, 𝓟, "weight")
 
         Q = list(G.nodes)
         shuffle(Q)
         for v in Q:
             # Find best community for node `v` to be in, potentially creating a new community.
-            # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-            (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C), [*𝓟, set()])
+            # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached by moving v into Cₘ.
+            (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C, "weight"), [*𝓟, set()])
 
             # If we get a strictly better value, assign v to community Cₘ
             if 𝛥𝓗 > 0:
                 𝓟.move_node(v, Cₘ)
 
         # If no further improvement can be made, we're done and return the current partition
-        if 𝓗(G, 𝓟) <= 𝓗ₒ:
+        if 𝓗(G, 𝓟, "weight") <= 𝓗ₒ:
             return 𝓟
