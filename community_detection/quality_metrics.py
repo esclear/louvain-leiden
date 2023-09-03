@@ -65,6 +65,23 @@ class Modularity(QualityMetric[T], Generic[T]):
         # Calculate the constant potts model by adding the summands for all communities:
         return sum(map(community_summand, 𝓟)) / (2 * m)
 
+    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None) -> float:
+        """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        # First, determine the graph size
+        m = G.size(weight=weight)  # TODO: Potentially expensive!
+        # Now, calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
+        source_community = 𝓟.node_community(v)
+        diff_source = nx.cut_size(G, [v], source_community - {v}, weight)
+        diff_target = nx.cut_size(G, [v], target, weight)
+
+        # Get the necessary degrees
+        deg_v = G.degree(v, weight=weight)
+        degs_source = 𝓟.degree_sum(v)
+        degs_target = 𝓟.degree_sum(next(iter(target))) if target else 0
+
+        # Now, calculate and return the difference of the metric that will be accrued by moving the node v into the community t:
+        return (diff_target - diff_source + self.γ / (2 * m) * (deg_v * (degs_source - degs_target) - deg_v**2)) / m
+
 
 class CPM(QualityMetric[T], Generic[T]):
     """Implementation of the Constant Potts Model (CPM) as a quality function."""
