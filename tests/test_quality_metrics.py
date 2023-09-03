@@ -17,8 +17,7 @@ def test_modularity_trivial_values() -> None:
     """Test modularity calculation for special graphs and partitions to see if the values match our expectation."""
     C = nx.complete_graph(10)
     𝓟 = Partition.from_partition(C, [{i for i in range(10)}])
-    E = nx.empty_graph(10)
-    𝓠 = Partition.from_partition(E, [{i} for i in range(10)])
+    𝓠 = Partition.from_partition(C, [{i} for i in range(10)])
 
     𝓗: QualityMetric[int] = Modularity(1)
 
@@ -26,6 +25,7 @@ def test_modularity_trivial_values() -> None:
     assert abs(-0.1 - 𝓗(C, 𝓠)) < PRECISION
 
     # For empty graphs, the modularity is not defined. We return NaN in this case:
+    E = nx.empty_graph(10)
     assert isnan(𝓗(E, 𝓟))
     assert isnan(𝓗(E, 𝓠))
 
