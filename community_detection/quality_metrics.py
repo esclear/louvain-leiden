@@ -40,8 +40,8 @@ class Modularity(QualityMetric[T], Generic[T]):
 
     def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
-        node_degrees = dict(G.degree(weight=None))
-        two_m = 2 * G.size()
+        two_m = 2 * G.size(weight=weight)
+        node_degrees = dict(G.degree(weight=weight))
 
         # For empty graphs (without edges) return NaN, as Modularity is not defined then, due to the division by `2*m`.)
         if two_m == 0:
@@ -51,10 +51,10 @@ class Modularity(QualityMetric[T], Generic[T]):
 
         def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
-            # First, determine the number of edges within that community:
-            e_c: int = nx.induced_subgraph(G, C).size()
+            # First, determine the size of edges within that community:
+            e_c = nx.induced_subgraph(G, C).size(weight=weight)
             # Sum up the degrees of nodes in the community
-            degree_sum: int = sum(node_degrees[u] for u in C)
+            degree_sum: int = 𝓟.degree_sum(next(iter(C)))
 
             # From this, calculate the contribution of community c:
             return 2 * e_c - norm * degree_sum**2

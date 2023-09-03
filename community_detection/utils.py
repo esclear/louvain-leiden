@@ -25,7 +25,7 @@ T = TypeVar("T", covariant=True)
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
-    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int]):
+    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = None):
         """
         Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
 
@@ -46,10 +46,12 @@ class Partition(Generic[T]):
         # This is a dict, mapping each node to its community (the community's index in self._sets).
         self._node_part = node_part
 
+        # Store the key which is used for getting the weight information
+        self._weight = weight
         self._partition_degree_sums = degree_sums
 
     @classmethod
-    def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]) -> Partition[T]:
+    def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T], weight: None | str = None) -> Partition[T]:
         """Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes."""
         if not Partition.is_partition(G, 𝓟):
             raise AssertionError("𝓟 must be a partition of G!")
@@ -62,16 +64,16 @@ class Partition(Generic[T]):
         # (The order of nested comprehensions is a bit unintuitive in python.)
         node_part = {v: idx for idx, com in enumerate(sets) for v in com}
 
-        partition_degree_sums = [sum(map(lambda t: t[1], G.degree(C))) for C in sets]
+        partition_degree_sums = [sum(map(lambda t: t[1], G.degree(C, weight=weight))) for C in sets]
 
-        return cls(G, sets, node_part, partition_degree_sums)
+        return cls(G, sets, node_part, partition_degree_sums, weight)
 
     @classmethod
-    def singleton_partition(cls, G: Graph) -> Partition[T]:
+    def singleton_partition(cls, G: Graph, weight: None | str = None) -> Partition[T]:
         """Create a singleton partition, in which each community consists of exactly one vertex."""
         # Generate a list of triples containing all necessary information: The community (a singleton set), a (node, index) tuple
         # for the corresponding entry in the node_part lookup dict, and the degree.
-        data = [({v}, (v, i), G.degree(v)) for i, v in enumerate(G.nodes)]
+        data = [({v}, (v, i), G.degree(v, weight=weight)) for i, v in enumerate(G.nodes)]
         if not data:
             # Handle the empty graphs -> return empty lists and empty lookup dict
             sets, node_part, degree_sums = [], dict(), []
@@ -83,7 +85,7 @@ class Partition(Generic[T]):
             # From the list of tuples, create the dictionary we need
             node_part = dict(part_tuples)
 
-        return cls(G, sets, node_part, degree_sums)
+        return cls(G, sets, node_part, degree_sums, weight)
 
     @staticmethod
     def is_partition(G: Graph, 𝓟: Collection[Collection[T]]) -> bool:
@@ -119,7 +121,7 @@ class Partition(Generic[T]):
         self._sets[source_partition_idx].discard(v)
         self._sets[target_partition_idx].add(v)
         # Also update the sum of node degrees in that partition
-        deg_v = self.G.degree[v]
+        deg_v = self.G.degree(v, weight=self._weight)
         self._partition_degree_sums[source_partition_idx] -= deg_v
         self._partition_degree_sums[target_partition_idx] += deg_v
 
@@ -152,6 +154,7 @@ class Partition(Generic[T]):
         cpy._sets = deepcopy(self._sets)
         cpy._node_part = self._node_part.copy()
         cpy._partition_degree_sums = self._partition_degree_sums.copy()
+        cpy._weight = self._weight
         return cpy
 
     def __iter__(self) -> Iterator[set[T]]:

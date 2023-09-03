@@ -43,7 +43,7 @@ def test_modularity_delta() -> None:
     𝓗: QualityMetric[int] = Modularity(0.95)
 
     # Start with the (original) singleton partition
-    𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}])
+    𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}], weight="weight")
 
     # Initialize the variable in which we will accumulate the delta values
     old_value = 𝓗(B, 𝓟, "weight")
