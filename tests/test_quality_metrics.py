@@ -8,7 +8,7 @@ from community_detection.louvain import louvain
 from community_detection.quality_metrics import CPM, Modularity, QualityMetric
 from community_detection.utils import *
 
-PRECISION = 1e-15
+PRECISION = 2e-15
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
@@ -43,25 +43,26 @@ def test_modularity_delta() -> None:
     𝓗: QualityMetric[int] = Modularity(0.95)
 
     # Start with the (original) singleton partition
-    𝓞 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}])
-    𝓟 = copy(𝓞)
+    𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}])
 
     # Initialize the variable in which we will accumulate the delta values
-    delta_cum = 0
+    old_value = 𝓗(B, 𝓟, "weight")
 
     # A sequence of move sequences, described as tuples of a node and the community to move it into
     moves = [ (1, {5, 7}), (0, set()), (6, {1, 5, 7}), (2, {0}), (3, {0, 2}), (4, {0, 2, 3}), (0, {1, 5, 6, 7}), (1, set()), (0, {1}) ]
 
     # Now, carry out the moves and note down the accumulate the projected differences for each move
     for move in moves:
-        delta_cum += 𝓗.delta(B, 𝓟, move[0], move[1], "weight")
+        delta = 𝓗.delta(B, 𝓟, move[0], move[1], "weight")
         𝓟.move_node(*move)
+
+        new_value = 𝓗(B, 𝓟, "weight")
+        assert abs( (new_value - old_value) - delta ) < PRECISION, \
+            f"Projected Modularity-delta {delta} did not match actual delta {(new_value - old_value)} in move {move}!"
+        old_value = new_value
 
     # Sanity check that our node movements produced the expected state
     assert 𝓟.as_set() == freeze([{0, 1}, {2, 3, 4}, {5, 6, 7}])
-
-    # Finally, check that the cumulative difference matches the expected value.
-    assert abs((𝓗(B, 𝓟, "weight") - 𝓗(B, 𝓞, "weight")) - delta_cum) < PRECISION, "The cumulative delta values do not match the actual difference of Modularity values"
 
 
 def test_cpm_trivial_values() -> None:
@@ -117,22 +118,23 @@ def test_cpm_delta() -> None:
     𝓗: QualityMetric[int] = CPM(0.95)
 
     # Start with the (original) singleton partition
-    𝓞 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}])
-    𝓟 = copy(𝓞)
+    𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}])
 
     # Initialize the variable in which we will accumulate the delta values
-    delta_cum = 0
+    old_value = 𝓗(B, 𝓟, "weight")
 
     # A sequence of move sequences, described as tuples of a node and the community to move it into
     moves = [ (1, {5, 7}), (0, set()), (6, {1, 5, 7}), (2, {0}), (3, {0, 2}), (4, {0, 2, 3}), (0, {1, 5, 6, 7}), (1, set()), (0, {1}) ]
 
     # Now, carry out the moves and note down the accumulate the projected differences for each move
     for move in moves:
-        delta_cum += 𝓗.delta(B, 𝓟, move[0], move[1], "weight")
+        delta = 𝓗.delta(B, 𝓟, move[0], move[1], "weight")
         𝓟.move_node(*move)
+
+        new_value = 𝓗(B, 𝓟, "weight")
+        assert abs( (new_value - old_value) - delta ) < PRECISION, \
+            f"Projected CPM-delta {delta} did not match actual delta {(new_value - old_value)} in move {move}!"
+        old_value = new_value
 
     # Sanity check that our node movements produced the expected state
     assert 𝓟.as_set() == freeze([{0, 1}, {2, 3, 4}, {5, 6, 7}])
-
-    # Finally, check that the cumulative difference matches the expected value.
-    assert abs((𝓗(B, 𝓟, "weight") - 𝓗(B, 𝓞, "weight")) - delta_cum) < PRECISION, "The cumulative delta values do not match the actual difference of CPM values"

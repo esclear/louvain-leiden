@@ -23,11 +23,10 @@ class QualityMetric(ABC, Generic[T]):
         raise NotImplementedError()
 
     def delta(
-        self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None, baseline: None | float = None
+        self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None
     ) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
-        if not baseline:
-            baseline = self(G, 𝓟, weight)
+        baseline = self(G, 𝓟, weight)
         moved = copy(𝓟).move_node(v, target)
         return self(G, moved, weight) - baseline
 
@@ -88,7 +87,7 @@ class CPM(QualityMetric[T], Generic[T]):
         # Calculate the constant potts model by adding the summands for all communities:
         return sum(map(community_summand, 𝓟))
 
-    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None, baseline: None | float = None) -> float:
+    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
         # First calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
         source_community = 𝓟.node_community(v)
