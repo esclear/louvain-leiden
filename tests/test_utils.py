@@ -161,8 +161,8 @@ def test_aggregate_graph() -> None:
 
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)
-    assert len(H.nodes()) == 3
-    assert len(H.edges()) == 6
+    assert H.order() == 3
+    assert H.size() == 6
 
     # Verify that the nodes of the aggregate graph correspond to the communities
     assert list(H.nodes(data="nodes")) == [(0, frozenset({0})), (1, frozenset({1, 2})), (2, frozenset({3,4}))]

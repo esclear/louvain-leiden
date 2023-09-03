@@ -9,7 +9,8 @@ from math import exp
 from random import choices, shuffle
 from typing import TypeVar
 
-from networkx import Graph, edge_boundary
+import networkx as nx
+from networkx import Graph
 
 from .quality_metrics import QualityMetric
 from .utils import Partition, aggregate_graph, argmax, freeze, recursive_size
@@ -45,7 +46,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
         𝓟 = move_nodes_fast(G, 𝓟, 𝓗)
 
         # When every community consists of a single node only, terminate, returning the flat partition given by 𝓟
-        if len(𝓟) == len(G.nodes):
+        if len(𝓟) == G.order():
             # Return the partition 𝓟 in terms of the original graph, G_orig
             return 𝓟.flatten()
 
@@ -110,15 +111,10 @@ def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: f
 
 def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition[T]:
     """Merge the nodes in the subset S into one or more sets to refine the partition 𝓟."""
-
-    def E(C: set['T'] | frozenset['T'], D: set['T'] | frozenset['T']) -> int:
-        """Calculate |{ (u,v) ∈ E(G) | u ∈ C, v ∈ D }|."""  # noqa: D402 # disable warning that dislikes 'E' here
-        # edge_boundary (from NetworkX) calculates a C-D-cut, i.e. all edges starting in C and ending in D
-        return sum(1 for _ in edge_boundary(G, C, D))
-
+    # TODO: Handle weight in cut here and in T
     R = {
         v for v in S
-          if E({v}, S - {v}) >= γ * recursive_size(v) * (recursive_size(S) - recursive_size(v))
+          if nx.cut_size(G, [v], S - {v}) >= γ * recursive_size(v) * (recursive_size(S) - recursive_size(v))
     }  # fmt: skip
 
     for v in R:
@@ -127,7 +123,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             # Consider only well-connected communities
             𝓣 = freeze([
                 C for C in 𝓟
-                  if C <= S and E(C, S - C) >= γ * float(recursive_size(C) * (recursive_size(S) - recursive_size(C)))
+                  if C <= S and nx.cut_size(G, C, S - C) >= γ * float(recursive_size(C) * (recursive_size(S) - recursive_size(C)))
             ])  # fmt: skip
 
             # Now, choose a random community to put v into

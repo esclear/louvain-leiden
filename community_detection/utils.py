@@ -31,7 +31,7 @@ class Partition(Generic[T]):
 
         This constructor is meant for internal use only, please use `Partition.from_partition` instead.
         """
-        assert G.number_of_nodes() == len(node_part), "node_part size doesn't match number of nodes."
+        assert G.order() == len(node_part), "node_part size doesn't match number of nodes."
         assert degree_sums is not None, "No degree_sums given!"
         # Remember the graph (i.e. a reference to it)
         self.G = G
