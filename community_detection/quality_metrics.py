@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from copy import copy
+from math import comb
 from typing import Generic, TypeVar
 
 import networkx as nx
@@ -41,7 +42,7 @@ class Modularity(QualityMetric[T], Generic[T]):
     def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
         node_degrees = dict(G.degree(weight=None))
-        two_m = 2 * G.number_of_edges()
+        two_m = 2 * G.size()
 
         # For empty graphs (without edges) return NaN, as Modularity is not defined then, due to the division by `2*m`.)
         if two_m == 0:
@@ -52,7 +53,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the number of edges within that community:
-            e_c: int = len(nx.induced_subgraph(G, C).edges)
+            e_c: int = nx.induced_subgraph(G, C).size()
             # Sum up the degrees of nodes in the community
             degree_sum: int = sum(node_degrees[u] for u in C)
 
@@ -78,10 +79,28 @@ class CPM(QualityMetric[T], Generic[T]):
             # First, determine the number of edges within that community:
             e_c: int = nx.induced_subgraph(G, C).size(weight=weight)
             # Also get the number of nodes in this community.
-            n_c: int = len(C)
+            node_weights = G.nodes.data(weight, default=1)
+            n_c: int = sum(node_weights[u] for u in C) # TODO Check that this is used
 
             # From this, calculate the contribution of community c:
-            return e_c - self.γ * (n_c * (n_c - 1) / 2)
+            return e_c - self.γ * comb(n_c, 2)
 
         # Calculate the constant potts model by adding the summands for all communities:
         return sum(map(community_summand, 𝓟))
+
+    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None, baseline: None | float = None) -> float:
+        """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        # First calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
+        source_community = 𝓟.node_community(v)
+        diff_source = nx.cut_size(G, [v], source_community - {v}, weight)
+        diff_target = nx.cut_size(G, [v], target, weight)
+
+        # Determine the weight of v and the total weights of the source community (with v) and the target community (without v)
+        node_weights = G.nodes.data(weight, default=1)
+        v_weight = node_weights[v]
+        source_weight = sum(node_weights[u] for u in source_community)
+        target_weight = sum(node_weights[u] for u in target)
+
+        # Now, calculate and return the difference of the metric that will be accrued by moving the node v into the community t:
+        return diff_target - diff_source + self.γ * \
+            (comb(source_weight, 2) + comb(target_weight, 2) - comb(source_weight - v_weight, 2) - comb(target_weight + v_weight, 2))

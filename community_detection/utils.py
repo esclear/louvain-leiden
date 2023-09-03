@@ -274,7 +274,7 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T], weight: str | None = None) -> 
     # Determine the numer of communities and get a list of the communities
     n_c = len(𝓟)
     communities = list(𝓟.communities)
-    node_weights = G.nodes.data("", default=1)
+    node_weights = G.nodes.data(weight, default=1)
 
     # Create graph H that will become the aggregate graph
     H = Graph(parent_graph=G, parent_partition=𝓟)
