@@ -40,27 +40,30 @@ class Modularity(QualityMetric[T], Generic[T]):
 
     def __call__(self, G: Graph, 𝓟: Partition[T], weight: None | str = None) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
-        two_m = 2 * G.size(weight=weight)
-        node_degrees = dict(G.degree(weight=weight))
+        m = G.size(weight=weight)  # TODO: Potentially expensive!
+        node_degrees = dict(G.degree(weight=weight))  # TODO: Potentially expensive!
 
         # For empty graphs (without edges) return NaN, as Modularity is not defined then, due to the division by `2*m`.)
-        if two_m == 0:
+        if m == 0:
             return float('NaN')
 
-        norm: float = self.γ / two_m
+        norm: float = self.γ / (2 * m)
 
         def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
-            # First, determine the size of edges within that community:
-            e_c = nx.induced_subgraph(G, C).size(weight=weight)
-            # Sum up the degrees of nodes in the community
-            degree_sum: int = 𝓟.degree_sum(next(iter(C)))
+            # First, determine the total weight of edges within that community:
+            # Note that in the original definition, of 
+            e_c = nx.induced_subgraph(G, C).size(weight=weight)  # TODO: Potentially expensive
+            # Also 
+            deg_c = 𝓟.degree_sum(next(iter(C)))
 
             # From this, calculate the contribution of community c:
-            return 2 * e_c - norm * degree_sum**2
+            # The "From Louvain to Leiden" paper doesn't state this, but for the modularity to match the original, cited definition, e_c
+            # needs to be counted *twice*, as in an undirected graph, every edge {u,v} is counted twice, as (u,v) and as (v,u).
+            return 2 * e_c - norm * deg_c**2
 
-        # Calculate the modularity by adding the summands for all communities and dividing by `2 * m`:
-        return sum(map(community_summand, 𝓟)) / two_m
+        # Calculate the constant potts model by adding the summands for all communities:
+        return sum(map(community_summand, 𝓟)) / (2 * m)
 
 
 class CPM(QualityMetric[T], Generic[T]):
@@ -75,8 +78,8 @@ class CPM(QualityMetric[T], Generic[T]):
 
         def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
-            # First, determine the number of edges within that community:
-            e_c: int = nx.induced_subgraph(G, C).size(weight=weight)
+            # First, determine the total weight of edges within that community:
+            e_c = nx.induced_subgraph(G, C).size(weight=weight)
             # Also get the number of nodes in this community.
             node_weights = G.nodes.data(weight, default=1)
             n_c: int = sum(node_weights[u] for u in C) # TODO Check that this is used
