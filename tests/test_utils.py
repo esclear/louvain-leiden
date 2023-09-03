@@ -188,6 +188,29 @@ def test_aggregate_graph() -> None:
     assert J[1][1]["weight"] == 1
 
 
+def test_degree_sums() -> None:
+    G = nx.generators.classic.complete_graph(5)
+    communities = [{0}, {1, 2}, {3, 4}]
+    𝓟 = Partition.from_partition(G, communities)
+
+    assert 𝓟.degree_sum(0) == 4
+    assert 𝓟.degree_sum(1) == 𝓟.degree_sum(2) == 8
+    assert 𝓟.degree_sum(3) == 𝓟.degree_sum(4) == 8
+
+    H = aggregate_graph(G, 𝓟)
+
+    # Short sanity check: We have three nodes, representing the three communities
+    # and as many edges as before (recall that the aggregate graph H is a multigraph!)
+    assert H.order() == 3
+    assert H.size() == 6
+
+    # With an additional partition, generate an additional aggregate graph
+    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], "weight")
+
+    assert 𝓠.degree_sum(0) == 𝓠.degree_sum(1) == 12
+    assert 𝓠.degree_sum(2) == 8
+
+
 def test_singleton_partition() -> None:
     E = nx.generators.empty_graph(0)
     G = nx.generators.classic.complete_graph(5)

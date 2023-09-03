@@ -8,6 +8,8 @@ from community_detection.louvain import louvain
 from community_detection.quality_metrics import CPM, Modularity, QualityMetric
 from community_detection.utils import *
 
+from .utils import partition_randomly
+
 PRECISION = 2e-15
 
 # Don't let black destroy the manual formatting in this document:
@@ -28,6 +30,44 @@ def test_modularity_trivial_values() -> None:
     E = nx.empty_graph(10)
     assert isnan(𝓗(E, 𝓟))
     assert isnan(𝓗(E, 𝓠))
+
+
+def test_modularity_example() -> None:
+    """Test the Modularity calculation with a few examples."""
+    # Produce the example graph in the wikipedia page on modularity
+    G = nx.Graph()
+    G.add_edges_from([
+        (0,1), (0,4), (0,7),
+        (1,2), (2,3), (3,1),
+        (4,5), (5,6), (6,4),
+        (7,8), (8,9), (9,7)
+    ])
+
+    𝓗: QualityMetric[int] = Modularity(1)
+
+    # Start with the (original) singleton partition
+    𝓟 = Partition.from_partition(G, [ {0,1,2,3}, {4,5,6}, {7,8,9} ])
+
+    print(f"{𝓗(G, 𝓟)=}")
+    expected = 0.4896
+    assert abs( 𝓗(G, 𝓟) - expected ) < 1E-4, f"{𝓗(G, 𝓟)=} != {expected}=expected"
+
+
+def test_modularity_random() -> None:
+    """Test the Modularity calculation with random partitions of the karate club graph."""
+    G = nx.karate_club_graph()
+    nodes = list(G.nodes)
+
+    𝓗: QualityMetric[int] = Modularity(1)
+
+    for _ in range(10):
+        # Start with the (original) singleton partition
+        𝓟 = Partition.from_partition(G, partition_randomly(nodes))
+
+        our_mod = 𝓗(G, 𝓟)
+        reference_mod = nx.community.modularity(G, 𝓟.as_set(), weight=None, resolution=1)
+
+        assert abs( our_mod - reference_mod ) < PRECISION, f"𝓗(G, 𝓟) = {our_mod} != {reference_mod} = expected"
 
 
 def test_modularity_delta() -> None:

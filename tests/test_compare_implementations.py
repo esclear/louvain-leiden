@@ -9,7 +9,7 @@ PRECISION = 1e-15
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
 
-def test_modularity_comparison_networkx() -> None:
+def test_louvain_modularity_comparison_networkx() -> None:
     """Compare our implementation of Modularity and the Louvain algorithm with the ones in NetworkX."""
     # This test uses the so-called Zachary’s Karate Club graph, which represents the social interactions in a Karate
     # sports club. The nodes represent two trainers and 32 students, the edges represent interactions between two
