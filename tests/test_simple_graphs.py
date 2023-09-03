@@ -12,8 +12,8 @@ from community_detection.utils import freeze
 # results to be traceable by a human.
 # The choice of this graph is inspired by the problem with greedy algorithms described on p. 6 of the supplementary material
 # of the "From Louvain to Leiden" paper.
-BARBELL_GOOD = freeze([{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
-BARBELL_BAD = freeze([{0, 1, 2, 3, 4, 5}, {6, 7, 8, 9, 10, 11}])
+BARBELL_GOOD = freeze([{0, 1, 2, 3, 4, 5}, {6, 7, 8, 9, 10, 11}])
+BARBELL_BAD = freeze([{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
 
 
 def test_louvain_barbell_modularity() -> None:
