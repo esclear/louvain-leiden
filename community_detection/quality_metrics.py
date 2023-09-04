@@ -67,6 +67,9 @@ class Modularity(QualityMetric[T], Generic[T]):
 
     def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        if v in target:
+            return 0.0
+
         # First, determine the graph size
         m = G.size(weight=weight)  # TODO: Potentially expensive!
         # Now, calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
@@ -109,6 +112,9 @@ class CPM(QualityMetric[T], Generic[T]):
 
     def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T], weight: None | str = None) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        if v in target:
+            return 0.0
+
         # First calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
         source_community = 𝓟.node_community(v)
         diff_source = nx.cut_size(G, [v], source_community - {v}, weight)
