@@ -55,8 +55,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
         G = aggregate_graph(G, 𝓟ᵣ)
 
         # … but maintain partition 𝓟
-        # FIXME: <= is not applicable for aggregate graph!
-        𝓟 = Partition.from_partition(G, [{v for v in G.nodes if v <= C} for C in 𝓟])
+        𝓟 = Partition.from_partition(G, [{v for v in G.nodes if G.nodes[v]["nodes"] <= C} for C in 𝓟])
 
 
 def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
@@ -129,7 +128,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             # Have a list of pairs of communities in 𝓣 together with the improvement (𝛥𝓗) of moving v to the community
             # Only consider communities for which the quality function doesn't degrade, if v is moved there
             communities = [(C, 𝛥𝓗) for (C, 𝛥𝓗) in ((C, 𝓗.delta(G, 𝓟, v, C)) for C in 𝓣) if 𝛥𝓗 >= 0]
-
+            # Calculate the weights for the random choice using the 𝛥𝓗 values
             weights = [exp(𝛥𝓗 / θ) for (C, 𝛥𝓗) in communities]
 
             # Finally, choose the new community
