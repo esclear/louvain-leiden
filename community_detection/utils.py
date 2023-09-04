@@ -229,12 +229,13 @@ def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
     return set(map(lambda c: frozenset(c), set_list))
 
 
-def recursive_size(S: Nested[T]) -> int:
+def recursive_size(G: Graph, S: T | Collection[T]) -> int:
     """Return the recursive size of the set S."""
-    if isinstance(S, list):
-        return sum(recursive_size(s) for s in cast(list[Nested[T]], S))
-
-    return 1
+    if not isinstance(S, Iterable):
+        # TODO: Weight parameter name hardcoded!
+        return G.nodes.data("weight", default=1)[S]
+    else:
+        return sum(recursive_size(G, v) for v in S)
 
 
 def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tuple[T, float, int]:

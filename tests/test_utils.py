@@ -95,16 +95,24 @@ def test_freeze() -> None:
 
 
 def test_recursive_size() -> None:
-    assert recursive_size([]) == 0
+    G = nx.Graph()
+    G.add_node(0)
+    G.add_node(1, weight=1)
+    G.add_node(2, weight=2)
+    G.add_node(3, weight=4)
 
-    assert recursive_size(42) == 1
-    assert recursive_size([42]) == 1
+    assert recursive_size(G, 0) == 1
+    assert recursive_size(G, 1) == 1
+    assert recursive_size(G, 2) == 2
+    assert recursive_size(G, 3) == 4
 
-    assert recursive_size([0, [1]]) == 2
-    assert recursive_size([[[[0, [1]]]]]) == 2
+    assert recursive_size(G, []) == 0
+    assert recursive_size(G, {}) == 0
+    assert recursive_size(G, {0}) == 1
+    assert recursive_size(G, {3}) == 4
 
-    assert recursive_size([[], 1, [2], [[3]]]) == 3
-    assert recursive_size([1, 2, 3]) == 3
+    assert recursive_size(G, {0, 1}) == 2
+    assert recursive_size(G, {2, 3}) == 6
 
 
 def test_partition_flatten() -> None:
