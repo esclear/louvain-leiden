@@ -41,20 +41,19 @@ def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partitio
     """Perform node moves to communities as long as the quality metric can be improved by moving."""
     # This is the python form of a "do-while" loop
     while True:
-        # Store current ("o" for "old") quality function value
-        𝓗ₒ = 𝓗(G, 𝓟, "weight")
-
         Q = list(G.nodes)
         shuffle(Q)
+        improved = False
         for v in Q:
             # Find best community for node `v` to be in, potentially creating a new community.
-            # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached by moving v into Cₘ.
+            # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ (value at beginning of outer loop), reached by moving v into Cₘ.
             (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C, "weight"), [*𝓟, set()])
 
             # If we get a strictly better value, assign v to community Cₘ
             if 𝛥𝓗 > 0:
+                improved = True
                 𝓟.move_node(v, Cₘ)
 
         # If no further improvement can be made, we're done and return the current partition
-        if 𝓗(G, 𝓟, "weight") <= 𝓗ₒ:
+        if not improved:
             return 𝓟
