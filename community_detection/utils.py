@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from itertools import combinations_with_replacement
-from typing import (  # noqa: UP035 # recommends to import Callable from collections.abc instead
+from typing import (  # noqa: UP035 # ruff recommends to import Callable, Iterable, Iterator from collections.abc
     Callable,
     Collection,
     Generic,
@@ -11,7 +11,6 @@ from typing import (  # noqa: UP035 # recommends to import Callable from collect
     Iterator,
     TypeAlias,
     TypeVar,
-    cast,
 )
 
 from networkx import Graph, cut_size

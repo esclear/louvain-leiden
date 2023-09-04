@@ -27,7 +27,7 @@ def test_louvain_barbell_modularity() -> None:
     # Due to the randomized nature of the algorithms, we seed the random number generator used so that we get the expected
     # communities. Due to the greedy nature of the louvain algorithm, we will never reach BARBELL_GOOD, but nodes 5 and 6
     # will often belong to one of the communities belonging to one or both of the complete graphs
-    random.seed(10692)
+    random.seed(0)
 
     𝓗: QualityMetric[int] = Modularity(1)
     𝓠 = louvain(G, 𝓗)

@@ -70,9 +70,6 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
     shuffle(Q)
 
     while True:
-        # Store current ("old") quality function value
-        𝓗ₒ = 𝓗(G, 𝓟)
-
         # Determine next node to visit by popping first node in the queue
         v = Q.pop(0)
 
@@ -123,14 +120,11 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             # Consider only well-connected communities
             𝓣 = freeze([
                 C for C in 𝓟
-                  if C <= S and nx.cut_size(G, C, S - C) >= γ * float(recursive_size(C) * (recursive_size(S) - recursive_size(C)))
+                  if C <= S and nx.cut_size(G, C, S - C) >= γ * float(recursive_size(G, C) * (size_s - recursive_size(G, C)))
             ])  # fmt: skip
 
             # Now, choose a random community to put v into
             # We use python's random.choices for the weighted choice, as this is easiest.
-
-            # Store current ("old") quality function value
-            𝓗ₒ = 𝓗(G, 𝓟)
 
             # Have a list of pairs of communities in 𝓣 together with the improvement (𝛥𝓗) of moving v to the community
             # Only consider communities for which the quality function doesn't degrade, if v is moved there
