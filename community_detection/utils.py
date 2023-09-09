@@ -95,6 +95,49 @@ class Partition(Generic[T]):
         result: bool = community_utils.is_partition(G, 𝓟)
         return result
 
+    @staticmethod
+    def __collect_nodes(G: Graph, nodes: Collection[int | T]) -> list[T]:
+        """Collect the nodes in the underlying graph that correspond to the given `nodes` in the aggregate graph `G`."""
+        if "parent_partition" not in G.graph or "parent_graph" not in G.graph:
+            # If none exists (i.e. we have the original graph) return G and the node we have found
+            return list(nodes)
+        else:
+            # Otherwise, get the parent graph
+            H = G.graph["parent_graph"]
+            # For every node in `nodes`, collect its child nodes using recursive calls and combine them into a single list
+            return sum((Partition.__collect_nodes(H, G.nodes[n]["nodes"]) for n in nodes), [])
+
+    @staticmethod
+    def __find_original_graph(G: Graph) -> tuple[Graph, list[T]]:
+        """Find the original graph of an aggregate partition."""
+        if "parent_graph" in G.graph:
+            return Partition.__find_original_graph(G.graph["parent_graph"])
+        else:
+            return G
+
+    def __copy__(self) -> Partition[T]:
+        """Create a copy of this partition object."""
+        cls = self.__class__
+        cpy = cls.__new__(cls)
+        cpy.G = self.G
+        cpy._sets = deepcopy(self._sets)
+        cpy._node_part = self._node_part.copy()
+        cpy._partition_degree_sums = self._partition_degree_sums.copy()
+        cpy._weight = self._weight
+        return cpy
+
+    def __iter__(self) -> Iterator[set[T]]:
+        """Make a Partition object iterable, returning an iterator over the communities."""
+        return self._sets.__iter__()
+
+    def __contains__(self, nodes: object) -> bool:
+        """Return whether a given set of nodes is part of the partition or not."""
+        return nodes in self._sets
+
+    def __len__(self) -> int:
+        """Get the size (number of communities) of the partition."""
+        return len(self._sets)
+
     # In normal circumstances, using covariant type variables as function parameter (as we do here with T) can cause problems.
     # (especially for collections; see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
     # However, ths is not a problem for move_node, as we don't add new entries to the partition and don't rely on any functionality of the
@@ -145,32 +188,26 @@ class Partition(Generic[T]):
         """Get the community the node v is currently part of."""
         return self._sets[self._node_part[v]]
 
-    def __copy__(self) -> Partition[T]:
-        """Create a copy of this partition object."""
-        cls = self.__class__
-        cpy = cls.__new__(cls)
-        cpy.G = self.G
-        cpy._sets = deepcopy(self._sets)
-        cpy._node_part = self._node_part.copy()
-        cpy._partition_degree_sums = self._partition_degree_sums.copy()
-        cpy._weight = self._weight
-        return cpy
-
-    def __iter__(self) -> Iterator[set[T]]:
-        """Make a Partition object iterable, returning an iterator over the communities."""
-        return self._sets.__iter__()
-
-    def __contains__(self, nodes: object) -> bool:
-        """Return whether a given set of nodes is part of the partition or not."""
-        return nodes in self._sets
-
     def as_set(self) -> set[frozenset[T]]:
         """Return a set of sets of nodes that represents the communities."""
         return freeze(self.communities)
 
-    def __len__(self) -> int:
-        """Get the size (number of communities) of the partition."""
-        return len(self._sets)
+    # Here, we also permit a covariant type variable as a function parameter, as this is a pure read-only function (c.f. node_community).
+    def degree_sum(self, v: T) -> int:  # type: ignore
+        """Get the sum of node degrees of nodes in the community that `v` belongs to."""
+        return self._partition_degree_sums[self._node_part[v]]
+
+    def flatten(self) -> Partition[T]:
+        """Flatten the partition, producing a partition of the original graph."""
+        # If this is not an aggregate graph, return self.
+        if "parent_graph" not in self.G.graph or "parent_partition" not in self.G.graph:
+            return self
+
+        # Otherwise
+        G: Graph = Partition.__find_original_graph(self.G)
+        𝓟 = [Partition.__collect_nodes(self.G, C) for C in self._sets]
+
+        return Partition.from_partition(G, 𝓟)
 
     @property
     def communities(self) -> tuple[set[T], ...]:
@@ -180,43 +217,6 @@ class Partition(Generic[T]):
         We're using tuples as an immutable representation of a set / list, that is, the order of entries is of no importance.
         """
         return tuple(self._sets)
-
-    # Here, we also permit a covariant type variable as a function parameter, as this is a pure read-only function (c.f. node_community).
-    def degree_sum(self, v: T) -> int:  # type: ignore
-        """Get the sum of node degrees of nodes in the community that `v` belongs to."""
-        return self._partition_degree_sums[self._node_part[v]]
-
-    @staticmethod
-    def __collect_nodes(G: Graph, nodes: Collection[int | T]) -> list[T]:
-        """Collect the nodes in the underlying graph that correspond to the given `nodes` in the aggregate graph `G`."""
-        if "parent_partition" not in G.graph or "parent_graph" not in G.graph:
-            # If none exists (i.e. we have the original graph) return G and the node we have found
-            return list(nodes)
-        else:
-            # Otherwise, get the parent graph
-            H = G.graph["parent_graph"]
-            # For every node in `nodes`, collect its child nodes using recursive calls and combine them into a single list
-            return sum((Partition.__collect_nodes(H, G.nodes[n]["nodes"]) for n in nodes), [])
-
-    @staticmethod
-    def __find_original_graph(G: Graph) -> tuple[Graph, list[T]]:
-        """Find the original graph of an aggregate partition."""
-        if "parent_graph" in G.graph:
-            return Partition.__find_original_graph(G.graph["parent_graph"])
-        else:
-            return G
-
-    def flatten(self) -> Partition[T]:
-        """Flatten the partition, producing a partition of the original graph."""
-        # If this is not an aggregate graph, return self.
-        if "parent_graph" not in self.G.graph or "parent_partition" not in self.G.graph:
-            return self
-
-        # Otherwise
-        G = Partition.__find_original_graph(self.G)
-        𝓟 = [Partition.__collect_nodes(self.G, C) for C in self._sets]
-
-        return Partition.from_partition(G, 𝓟)
 
 
 def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
