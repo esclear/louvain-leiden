@@ -4,7 +4,7 @@ from typing import cast
 import networkx as nx
 import pytest
 
-from community_detection.utils import Partition, aggregate_graph, argmax, freeze, recursive_size
+from community_detection.utils import Partition, aggregate_graph, argmax, freeze, node_total
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
@@ -94,25 +94,25 @@ def test_freeze() -> None:
     assert freeze([set(), set()]) == { frozenset(set()) }
 
 
-def test_recursive_size() -> None:
+def test_node_total() -> None:
     G = nx.Graph()
     G.add_node(0)
     G.add_node(1, weight=1)
     G.add_node(2, weight=2)
     G.add_node(3, weight=4)
 
-    assert recursive_size(G, 0) == 1
-    assert recursive_size(G, 1) == 1
-    assert recursive_size(G, 2) == 2
-    assert recursive_size(G, 3) == 4
+    assert node_total(G, 0) == 1
+    assert node_total(G, 1) == 1
+    assert node_total(G, 2) == 2
+    assert node_total(G, 3) == 4
 
-    assert recursive_size(G, []) == 0
-    assert recursive_size(G, {}) == 0
-    assert recursive_size(G, {0}) == 1
-    assert recursive_size(G, {3}) == 4
+    assert node_total(G, []) == 0
+    assert node_total(G, {}) == 0
+    assert node_total(G, {0}) == 1
+    assert node_total(G, {3}) == 4
 
-    assert recursive_size(G, {0, 1}) == 2
-    assert recursive_size(G, {2, 3}) == 6
+    assert node_total(G, {0, 1}) == 2
+    assert node_total(G, {2, 3}) == 6
 
 
 def test_partition_flatten() -> None:

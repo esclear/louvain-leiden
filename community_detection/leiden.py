@@ -13,7 +13,7 @@ import networkx as nx
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, freeze, recursive_size
+from .utils import Partition, aggregate_graph, argmax, freeze, node_total
 
 T = TypeVar("T")
 
@@ -110,7 +110,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
     # TODO: Handle weight in cut here and in T
     R = {
         v for v in S
-          if nx.cut_size(G, [v], S - {v}) >= γ * recursive_size(v) * (recursive_size(S) - recursive_size(v))
+          if nx.cut_size(G, [v], S - {v}) >= γ * node_total(G, v) * (node_total(G, S) - node_total(G, v))
     }  # fmt: skip
 
     for v in R:
@@ -119,7 +119,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             # Consider only well-connected communities
             𝓣 = freeze([
                 C for C in 𝓟
-                  if C <= S and nx.cut_size(G, C, S - C) >= γ * float(recursive_size(G, C) * (size_s - recursive_size(G, C)))
+                  if C <= S and nx.cut_size(G, C, S - C) >= γ * float(node_total(G, C) * (node_total(G, S) - node_total(G, C)))
             ])  # fmt: skip
 
             # Now, choose a random community to put v into
