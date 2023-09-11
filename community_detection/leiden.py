@@ -107,10 +107,12 @@ def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: f
 
 def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition[T]:
     """Merge the nodes in the subset S into one or more sets to refine the partition 𝓟."""
+    size_s = node_total(G, S)
+
     # TODO: Handle weight in cut here and in T
     R = {
         v for v in S
-          if nx.cut_size(G, [v], S - {v}) >= γ * node_total(G, v) * (node_total(G, S) - node_total(G, v))
+          if nx.cut_size(G, [v], S - {v}, weight="weight") >= γ * node_total(G, v) * (size_s - node_total(G, v))
     }  # fmt: skip
 
     for v in R:
@@ -119,7 +121,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             # Consider only well-connected communities
             𝓣 = freeze([
                 C for C in 𝓟
-                  if C <= S and nx.cut_size(G, C, S - C) >= γ * float(node_total(G, C) * (node_total(G, S) - node_total(G, C)))
+                  if C <= S and nx.cut_size(G, C, S - C, weight="weight") >= γ * float(node_total(G, C) * (size_s - node_total(G, C)))
             ])  # fmt: skip
 
             # Now, choose a random community to put v into
