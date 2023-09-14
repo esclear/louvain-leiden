@@ -164,11 +164,9 @@ def test_leiden_weighted_barbell_modularity() -> None:
     # This test proves that the Leiden algorithm *can arrive* at the WEIGHTED_BARBELL_GOOD partition, which cannot be reached by the
     # greedy Louvain algorithm (cf. the Louvain and Leiden paper).
     # The seed below leads to *this exact* partition (and not a partition of equivalent quality)
-    random.seed(2)
+    random.seed(15)
 
-    𝓗: QualityMetric[int] = Modularity(1.5)
-
-    # As proposed in the paper, run the algorithm multiple times, each time refining the prior result
+    𝓗: QualityMetric[int] = Modularity(1.6)
     𝓠 = leiden(G, 𝓗)
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
@@ -206,7 +204,7 @@ def test_leiden_weighted_barbell_cpm() -> None:
     # This test proves that the Leiden algorithm *can arrive* at the WEIGHTED_BARBELL_GOOD partition, which cannot be reached by the
     # greedy Louvain algorithm (cf. the Louvain and Leiden paper).
     # The seed below leads to *this exact* partition (and not a partition of equivalent quality)
-    random.seed(103)
+    random.seed(460)
 
     𝓗: QualityMetric[int] = CPM(1)
     𝓠 = leiden(G, 𝓗, θ=0.25)
