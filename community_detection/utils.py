@@ -298,12 +298,24 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T], weight: str | None = None) -> 
     return H
 
 
-def single_node_neighbor_cut_size(G: Graph, v: T, neighbors: set[T] | frozenset[T], weight: None | str = None) -> float:
+def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weight: None | str = None) -> float:
     """
-    Calculate the size of an (S,T)-cut, where S is a single node.
+    Calculate the size of an (C,D)-cut, where C is a single node.
 
-    This basically does the same as a call to networkx' nx.cut_size(G, {v}, neighbors, weight).
+    This basically does the same as a call to networkx' nx.cut_size(G, {v}, D, weight).
     However, this implementation is a bit more optimized for this special case, in which one set consists of only one node.
     """
-    incident_edges = G.edges(v, data=weight, default=1)
-    return sum(w for (s, t, w) in incident_edges if t in neighbors)
+    # Generator that produces all neighbors of v that are also in D.
+    relevant_neighbors = (w for w in G[v] if w in D)
+
+    # Now, for all such neighbors, sum up the weights of the edges (v,w).
+    return sum(G[v][w][weight] for w in relevant_neighbors)
+
+
+def preprocess_graph(G: Graph, weight: str) -> Graph:
+    """Preprocesses a graph, adding weights of 1 to all edges which carry no weight data yet."""
+    for u, v, d in G.edges.data(weight, default=None):
+        if d is None:
+            G.edges[u, v][weight] = 1
+
+    return G

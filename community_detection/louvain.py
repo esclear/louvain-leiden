@@ -11,13 +11,16 @@ from random import shuffle
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax
+from .utils import Partition, aggregate_graph, argmax, preprocess_graph
 
 T = TypeVar("T")
 
 
 def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) -> Partition[T]:
     """Perform the Louvain algorithm for community detection."""
+    # For every edge, assign an edge weight attribute of 1, if no weight is set yet.
+    G = preprocess_graph(G, "weight")
+
     # If there is no partition given, start with every node in its' own community
     if 𝓟 is None:
         𝓟 = Partition.singleton_partition(G, "weight")

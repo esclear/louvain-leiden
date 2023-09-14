@@ -13,7 +13,7 @@ import networkx as nx
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, freeze, node_total
+from .utils import Partition, aggregate_graph, argmax, freeze, node_total, preprocess_graph
 
 T = TypeVar("T")
 
@@ -38,6 +38,9 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
 
     :returns: A partition of G into communities
     """
+    # For every edge, assign an edge weight attribute of 1, if no weight is set yet.
+    G = preprocess_graph(G, "weight")
+
     # If there is no partition given, start with all nodes in the same community
     if 𝓟 is None:
         𝓟 = Partition.from_partition(G, [{v for v in G.nodes}])
