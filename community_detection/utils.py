@@ -35,6 +35,8 @@ class Partition(Generic[T]):
         # Remember the graph (i.e. a reference to it)
         self.G = G
 
+        self.graph_size = G.size(weight=weight)
+
         # The partition as a list of sets
         # We store /lists/ of sets instead of /sets/ of sets, because changeable sets in python are not /hashable/ and
         # thus can't be stored in a set. We could store a set of frozensets instead, however, this would complicate

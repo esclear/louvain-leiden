@@ -70,7 +70,7 @@ class Modularity(QualityMetric[T], Generic[T]):
             return 0.0
 
         # First, determine the graph size
-        m = G.size(weight=weight)  # TODO: Potentially expensive!
+        m = 𝓟.graph_size
         # Now, calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
         source_community = 𝓟.node_community(v)
         diff_source = nx.cut_size(G, (v,), (u for u in source_community if u != v), weight)
