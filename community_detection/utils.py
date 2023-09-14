@@ -296,3 +296,14 @@ def aggregate_graph(G: Graph, 𝓟: Partition[T], weight: str | None = None) -> 
         H.add_edge(c_idx, d_idx, weight=cut_size(G, C, D, weight=weight))
 
     return H
+
+
+def single_node_neighbor_cut_size(G: Graph, v: T, neighbors: set[T] | frozenset[T], weight: None | str = None) -> float:
+    """
+    Calculate the size of an (S,T)-cut, where S is a single node.
+
+    This basically does the same as a call to networkx' nx.cut_size(G, {v}, neighbors, weight).
+    However, this implementation is a bit more optimized for this special case, in which one set consists of only one node.
+    """
+    incident_edges = G.edges(v, data=weight, default=1)
+    return sum(w for (s, t, w) in incident_edges if t in neighbors)

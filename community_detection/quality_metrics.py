@@ -9,7 +9,7 @@ from typing import Generic, TypeVar
 import networkx as nx
 from networkx import Graph
 
-from .utils import Partition
+from .utils import Partition, single_node_neighbor_cut_size
 
 T = TypeVar("T")
 
@@ -73,8 +73,8 @@ class Modularity(QualityMetric[T], Generic[T]):
         m = 𝓟.graph_size
         # Now, calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
         source_community = 𝓟.node_community(v)
-        diff_source = nx.cut_size(G, (v,), (u for u in source_community if u != v), weight)
-        diff_target = nx.cut_size(G, (v,), target, weight)
+        diff_source = single_node_neighbor_cut_size(G, v, set(u for u in source_community if u != v), weight)
+        diff_target = single_node_neighbor_cut_size(G, v, target, weight)
 
         # Get the necessary degrees
         deg_v = G.degree(v, weight=weight)
@@ -116,8 +116,8 @@ class CPM(QualityMetric[T], Generic[T]):
 
         # First calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
         source_community = 𝓟.node_community(v)
-        diff_source = nx.cut_size(G, (v,), (u for u in source_community if u != v), weight)
-        diff_target = nx.cut_size(G, (v,), target, weight)
+        diff_source = single_node_neighbor_cut_size(G, v, set(u for u in source_community if u != v), weight)
+        diff_target = single_node_neighbor_cut_size(G, v, target, weight)
 
         # Determine the weight of v and the total weights of the source community (with v) and the target community (without v)
         node_weights = G.nodes.data(weight, default=1)
