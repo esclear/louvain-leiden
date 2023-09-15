@@ -13,12 +13,14 @@ import networkx as nx
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, argmax, freeze, node_total, preprocess_graph
+from .utils import DataKeys as Keys, Partition, argmax, freeze, node_total, preprocess_graph
 
 T = TypeVar("T")
 
 
-def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, θ: float = 0.05, γ: float = 1.0) -> Partition[T]:
+def leiden(
+    G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, θ: float = 0.05, γ: float = 1.0, weight: str | None = None
+) -> Partition[T]:
     """
     Perform the Leiden algorithm for community detection.
 
@@ -39,13 +41,13 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
     :returns: A partition of G into communities
     """
     # For every edge, assign an edge weight attribute of 1, if no weight is set yet.
-    G = preprocess_graph(G, "weight")
+    G = preprocess_graph(G, weight)
 
-    # If there is no partition given, start with all nodes in the same community
-    if 𝓟 is None:
-        𝓟 = Partition.from_partition(G, [{v for v in G.nodes}])
+    # If there is a partition given, use it, else start with all nodes in the same community
+    if 𝓟:
+        𝓟 = Partition.from_partition(G, 𝓟, Keys.WEIGHT)
     else:
-        assert 𝓟.G == G, "The partition is not one for the graph provided!"
+        𝓟 = Partition.from_partition(G, [{v for v in G.nodes}], Keys.WEIGHT)
 
     while True:
         𝓟 = move_nodes_fast(G, 𝓟, 𝓗)
@@ -60,7 +62,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
         G = 𝓟ᵣ.aggregate_graph()
 
         # … but maintain partition 𝓟
-        𝓟 = Partition.from_partition(G, [{v for v in G.nodes if G.nodes[v]["nodes"] <= C} for C in 𝓟])
+        𝓟 = Partition.from_partition(G, [{v for v in G.nodes if G.nodes[v][Keys.NODES] <= C} for C in 𝓟], Keys.WEIGHT)
 
 
 def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
@@ -79,7 +81,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
 
         # Find best community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C, "weight"), [*𝓟, set()])
+        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C), [*𝓟, set()])
 
         # If we can achieve a strict improvement
         if 𝛥𝓗 > 0:
@@ -100,7 +102,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
 def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float) -> Partition[T]:
     """Refine all communities by merging repeatedly, starting from a singleton partition."""
     # Assign each node to its own community
-    𝓟ᵣ: Partition[T] = Partition.singleton_partition(G)
+    𝓟ᵣ: Partition[T] = Partition.singleton_partition(G, Keys.WEIGHT)
 
     # Visit all communities
     for C in 𝓟:
@@ -117,7 +119,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
     # TODO: Handle weight in cut here and in T
     R = {
         v for v in S
-          if nx.cut_size(G, [v], S - {v}, weight="weight") >= γ * node_total(G, v) * (size_s - node_total(G, v))
+          if nx.cut_size(G, [v], S - {v}, weight=Keys.WEIGHT) >= γ * node_total(G, v) * (size_s - node_total(G, v))
     }  # fmt: skip
 
     for v in R:
@@ -126,7 +128,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
             # Consider only well-connected communities
             𝓣 = freeze([
                 C for C in 𝓟
-                  if C <= S and nx.cut_size(G, C, S - C, weight="weight") >= γ * float(node_total(G, C) * (size_s - node_total(G, C)))
+                  if C <= S and nx.cut_size(G, C, S - C, weight=Keys.WEIGHT) >= γ * float(node_total(G, C) * (size_s - node_total(G, C)))
             ])  # fmt: skip
 
             # Now, choose a random community to put v into
@@ -134,7 +136,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
 
             # Have a list of pairs of communities in 𝓣 together with the improvement (𝛥𝓗) of moving v to the community
             # Only consider communities for which the quality function doesn't degrade, if v is moved there
-            communities = [(C, 𝛥𝓗) for (C, 𝛥𝓗) in ((C, 𝓗.delta(G, 𝓟, v, C, "weight")) for C in 𝓣) if 𝛥𝓗 >= 0]
+            communities = [(C, 𝛥𝓗) for (C, 𝛥𝓗) in ((C, 𝓗.delta(G, 𝓟, v, C)) for C in 𝓣) if 𝛥𝓗 >= 0]
             # Calculate the weights for the random choice using the 𝛥𝓗 values
             weights = [exp(𝛥𝓗 / θ) for (C, 𝛥𝓗) in communities]
 

@@ -4,7 +4,7 @@ from typing import cast
 import networkx as nx
 import pytest
 
-from community_detection.utils import Partition, argmax, freeze, node_total
+from community_detection.utils import DataKeys, Partition, argmax, freeze, node_total
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
@@ -97,9 +97,9 @@ def test_freeze() -> None:
 def test_node_total() -> None:
     G = nx.Graph()
     G.add_node(0)
-    G.add_node(1, weight=1)
-    G.add_node(2, weight=2)
-    G.add_node(3, weight=4)
+    G.add_node(1, **{DataKeys.WEIGHT: 1})
+    G.add_node(2, **{DataKeys.WEIGHT: 2})
+    G.add_node(3, **{DataKeys.WEIGHT: 4})
 
     assert node_total(G, 0) == 1
     assert node_total(G, 1) == 1
@@ -173,27 +173,27 @@ def test_aggregate_graph() -> None:
     assert H.size() == 6
 
     # Verify that the nodes of the aggregate graph correspond to the communities
-    assert list(H.nodes(data="nodes")) == [(0, frozenset({0})), (1, frozenset({1, 2})), (2, frozenset({3,4}))]
+    assert list(H.nodes(data=DataKeys.NODES)) == [(0, frozenset({0})), (1, frozenset({1, 2})), (2, frozenset({3,4}))]
     # Check that the inter-community-edges are correct
-    assert H[0][1]["weight"] == 2
-    assert H[0][2]["weight"] == 2
-    assert H[1][2]["weight"] == 4
+    assert H[0][1][DataKeys.WEIGHT] == 2
+    assert H[0][2][DataKeys.WEIGHT] == 2
+    assert H[1][2][DataKeys.WEIGHT] == 4
     # Also check that self-loops for the communities are correct
-    assert H[0][0]["weight"] == 0
-    assert H[1][1]["weight"] == 1
-    assert H[2][2]["weight"] == 1
+    assert H[0][0][DataKeys.WEIGHT] == 0
+    assert H[1][1][DataKeys.WEIGHT] == 1
+    assert H[2][2][DataKeys.WEIGHT] == 1
 
     # With an additional partition, generate an additional aggregate graph
-    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], weight="weight")
+    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], weight=DataKeys.WEIGHT)
     J = 𝓠.aggregate_graph()
 
     # Verify that the nodes of the aggregate graph correspond to the communities
-    assert list(J.nodes(data="nodes")) == [(0, frozenset({0, 1})), (1, frozenset({2}))]
+    assert list(J.nodes(data=DataKeys.NODES)) == [(0, frozenset({0, 1})), (1, frozenset({2}))]
     # Check that the inter-community-edges are correct
-    assert J[0][1]["weight"] == 6
+    assert J[0][1][DataKeys.WEIGHT] == 6
     # Also check that self-loops for the communities are correct
-    assert J[0][0]["weight"] == 3
-    assert J[1][1]["weight"] == 1
+    assert J[0][0][DataKeys.WEIGHT] == 3
+    assert J[1][1][DataKeys.WEIGHT] == 1
 
 
 def test_degree_sums() -> None:
@@ -213,7 +213,7 @@ def test_degree_sums() -> None:
     assert H.size() == 6
 
     # With an additional partition, generate an additional aggregate graph
-    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], "weight")
+    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], DataKeys.WEIGHT)
 
     assert 𝓠.degree_sum(0) == 𝓠.degree_sum(1) == 12
     assert 𝓠.degree_sum(2) == 8

@@ -147,7 +147,7 @@ def test_louvain_weighted_barbell_modularity() -> None:
     random.seed(0)
 
     𝓗: QualityMetric[int] = Modularity(1)
-    𝓠 = louvain(G, 𝓗)
+    𝓠 = louvain(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
 
@@ -167,7 +167,7 @@ def test_leiden_weighted_barbell_modularity() -> None:
     random.seed(15)
 
     𝓗: QualityMetric[int] = Modularity(1.6)
-    𝓠 = leiden(G, 𝓗)
+    𝓠 = leiden(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
 
@@ -187,7 +187,7 @@ def test_louvain_weighted_barbell_cpm() -> None:
 
     # The following resolution parameter for the CPM was found using binary serach on the interval [0.95, 1.05].
     𝓗: QualityMetric[int] = CPM(0.9999999999999986)
-    𝓠 = louvain(G, 𝓗)
+    𝓠 = louvain(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
 
@@ -207,6 +207,6 @@ def test_leiden_weighted_barbell_cpm() -> None:
     random.seed(460)
 
     𝓗: QualityMetric[int] = CPM(1)
-    𝓠 = leiden(G, 𝓗, θ=0.25)
+    𝓠 = leiden(G, 𝓗, θ=0.25, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD

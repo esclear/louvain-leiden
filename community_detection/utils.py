@@ -1,4 +1,5 @@
 """This module provides some useful types and functions used in the algorithms implementations."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -9,22 +10,33 @@ from typing import (  # noqa: UP035 # ruff recommends to import Callable, Iterab
     Generic,
     Iterable,
     Iterator,
-    TypeAlias,
     TypeVar,
 )
 
 from networkx import Graph, cut_size
 from networkx.algorithms.community import community_utils
 
-S = TypeVar("S")
-Nested: TypeAlias = S | Iterable['Nested[S]']
+
 T = TypeVar("T", covariant=True)
+
+
+class DataKeys:
+    """
+    Keys to use in the graph for node and edge weight data.
+
+    These values should be unique, in order to prevent unwanted collisions with data in the original graphs.
+    """
+
+    WEIGHT = "__da_ll_w__"
+    NODES = "__da_ll_n__"
+    PARENT_GRAPH = "__da_ll_ppg__"
+    PARENT_PARTITION = "__da_ll_pp__"
 
 
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
-    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = None):
+    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT):
         """
         Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
 
@@ -100,20 +112,20 @@ class Partition(Generic[T]):
     @staticmethod
     def __collect_nodes(G: Graph, nodes: Collection[int | T]) -> list[T]:
         """Collect the nodes in the underlying graph that correspond to the given `nodes` in the aggregate graph `G`."""
-        if "parent_partition" not in G.graph or "parent_graph" not in G.graph:
+        if DataKeys.PARENT_PARTITION not in G.graph or DataKeys.PARENT_GRAPH not in G.graph:
             # If none exists (i.e. we have the original graph) return G and the node we have found
             return list(nodes)
         else:
             # Otherwise, get the parent graph
-            H = G.graph["parent_graph"]
+            H = G.graph[DataKeys.PARENT_GRAPH]
             # For every node in `nodes`, collect its child nodes using recursive calls and combine them into a single list
-            return sum((Partition.__collect_nodes(H, G.nodes[n]["nodes"]) for n in nodes), [])
+            return sum((Partition.__collect_nodes(H, G.nodes[n][DataKeys.NODES]) for n in nodes), [])
 
     @staticmethod
     def __find_original_graph(G: Graph) -> tuple[Graph, list[T]]:
         """Find the original graph of an aggregate partition."""
-        if "parent_graph" in G.graph:
-            return Partition.__find_original_graph(G.graph["parent_graph"])
+        if DataKeys.PARENT_GRAPH in G.graph:
+            return Partition.__find_original_graph(G.graph[DataKeys.PARENT_GRAPH])
         else:
             return G
 
@@ -195,18 +207,18 @@ class Partition(Generic[T]):
         node_weights = self.G.nodes.data(self._weight, default=1)
 
         # Create graph H that will become the aggregate graph
-        H = Graph(parent_graph=self.G, parent_partition=self)
+        H = Graph(**{DataKeys.PARENT_GRAPH: self.G, DataKeys.PARENT_PARTITION: self})
 
         # For every community, add a node in H, also recording the nodes
         for i, C in enumerate(self._sets):
             community_weight = sum(node_weights[v] for v in C)
-            H.add_node(i, weight=community_weight, nodes=frozenset(C))
+            H.add_node(i, **{DataKeys.WEIGHT: community_weight, DataKeys.NODES: frozenset(C)})
 
         # For every pair of communities, determine the total weight of edges between them.
         # This also includes edges between two nodes in the same community, which will form a loop in the aggregate graph.
         for c_idx, d_idx in combinations_with_replacement(range(n_c), 2):
             C, D = self._sets[c_idx], self._sets[d_idx]
-            H.add_edge(c_idx, d_idx, weight=cut_size(self.G, C, D, weight=self._weight))
+            H.add_edge(c_idx, d_idx, **{DataKeys.WEIGHT: cut_size(self.G, C, D, weight=self._weight)})
 
         return H
 
@@ -230,7 +242,7 @@ class Partition(Generic[T]):
     def flatten(self) -> Partition[T]:
         """Flatten the partition, producing a partition of the original graph."""
         # If this is not an aggregate graph, return self.
-        if "parent_graph" not in self.G.graph or "parent_partition" not in self.G.graph:
+        if DataKeys.PARENT_GRAPH not in self.G.graph or DataKeys.PARENT_PARTITION not in self.G.graph:
             return self
 
         # Otherwise
@@ -260,10 +272,13 @@ def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
 
 
 def node_total(G: Graph, S: T | Collection[T]) -> int:
-    """Return the recursive size of the set S."""
+    """
+    Return the recursive size of the set S of nodes in an (aggregate) graph.
+
+    Note that the graph has to have been preprocessed / created by one of the functions above for this to return correct results.
+    """
     if not isinstance(S, Iterable):
-        # TODO: Weight parameter name hardcoded!
-        return G.nodes.data("weight", default=1)[S]
+        return G.nodes.data(DataKeys.WEIGHT, default=1)[S]
     else:
         return sum(node_total(G, v) for v in S)
 
@@ -296,7 +311,7 @@ def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tup
     return (opt, val, idx)
 
 
-def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weight: None | str = None) -> float:
+def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weight: str = None) -> float:
     """
     Calculate the size of an (C,D)-cut, where C is a single node.
 
@@ -312,8 +327,7 @@ def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weig
 
 def preprocess_graph(G: Graph, weight: str) -> Graph:
     """Preprocesses a graph, adding weights of 1 to all edges which carry no weight data yet."""
-    for u, v, d in G.edges.data(weight, default=None):
-        if d is None:
-            G.edges[u, v][weight] = 1
+    for u, v, d in G.edges.data(weight, default=1):
+        G.edges[u, v][DataKeys.WEIGHT] = d
 
     return G

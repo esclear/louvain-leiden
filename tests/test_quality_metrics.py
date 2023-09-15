@@ -6,7 +6,7 @@ import networkx as nx
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
 from community_detection.quality_metrics import CPM, Modularity, QualityMetric
-from community_detection.utils import *
+from community_detection.utils import Partition, freeze
 
 from .utils import partition_randomly
 
@@ -28,7 +28,9 @@ def test_modularity_trivial_values() -> None:
 
     # For empty graphs, the modularity is not defined. We return NaN in this case:
     E = nx.empty_graph(10)
+    𝓟 = Partition.from_partition(E, 𝓟)
     assert isnan(𝓗(E, 𝓟))
+    𝓠 = Partition.from_partition(E, 𝓠)
     assert isnan(𝓗(E, 𝓠))
 
 
@@ -86,7 +88,7 @@ def test_modularity_delta() -> None:
     𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}], weight="weight")
 
     # Initialize the variable in which we will accumulate the delta values
-    old_value = 𝓗(B, 𝓟, "weight")
+    old_value = 𝓗(B, 𝓟)
 
     # A sequence of move sequences, described as tuples of a node and the community to move it into
     # The first move moves a node into its current community (i.e. a no-op) - we expect a delta of 0 to be calculated here
@@ -94,10 +96,10 @@ def test_modularity_delta() -> None:
 
     # Now, carry out the moves and note down the accumulate the projected differences for each move
     for move in moves:
-        delta = 𝓗.delta(B, 𝓟, move[0], move[1], "weight")
+        delta = 𝓗.delta(B, 𝓟, move[0], move[1])
         𝓟.move_node(*move)
 
-        new_value = 𝓗(B, 𝓟, "weight")
+        new_value = 𝓗(B, 𝓟)
         assert abs( (new_value - old_value) - delta ) < PRECISION, \
             f"Projected Modularity-delta {delta} did not match actual delta {(new_value - old_value)} in move {move}!"
         old_value = new_value
@@ -132,8 +134,11 @@ def test_cpm_example_from_material() -> None:
         (1, 5, 1.5), (1, 6, 1.5), (1, 7, 1.5), (5, 6, 3), (5, 7, 3), (6, 7, 3)
     ])
 
+    # Produce partitions with and without weight information
     𝓞 = Partition.from_partition(B, [{0, 2, 3, 4},{1, 5, 6, 7}])
     𝓝 = Partition.from_partition(B, [{2, 3, 4}, {0, 1}, {5, 6, 7}])
+    𝓞_w = Partition.from_partition(B, [{0, 2, 3, 4},{1, 5, 6, 7}], "weight")
+    𝓝_w = Partition.from_partition(B, [{2, 3, 4}, {0, 1}, {5, 6, 7}], "weight")
 
     𝓗: QualityMetric[int] = CPM(1.0)
 
@@ -142,8 +147,8 @@ def test_cpm_example_from_material() -> None:
     assert 𝓗(B, 𝓞) == 0
     assert 𝓗(B, 𝓝) == 0
     # Weighted (as in the supplementary material)
-    assert 𝓗(B, 𝓞, "weight") == 15
-    assert 𝓗(B, 𝓝, "weight") == 14
+    assert 𝓗(B, 𝓞_w) == 15
+    assert 𝓗(B, 𝓝_w) == 14
 
 
 def test_cpm_delta() -> None:
@@ -159,10 +164,10 @@ def test_cpm_delta() -> None:
     𝓗: QualityMetric[int] = CPM(0.95)
 
     # Start with the (original) singleton partition
-    𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}])
+    𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}], "weight")
 
     # Initialize the variable in which we will accumulate the delta values
-    old_value = 𝓗(B, 𝓟, "weight")
+    old_value = 𝓗(B, 𝓟)
 
     # A sequence of move sequences, described as tuples of a node and the community to move it into
     # The first move moves a node into its current community (i.e. a no-op) - we expect a delta of 0 to be calculated here
@@ -170,10 +175,10 @@ def test_cpm_delta() -> None:
 
     # Now, carry out the moves and note down the accumulate the projected differences for each move
     for move in moves:
-        delta = 𝓗.delta(B, 𝓟, move[0], move[1], "weight")
+        delta = 𝓗.delta(B, 𝓟, move[0], move[1])
         𝓟.move_node(*move)
 
-        new_value = 𝓗(B, 𝓟, "weight")
+        new_value = 𝓗(B, 𝓟)
         assert abs( (new_value - old_value) - delta ) < PRECISION, \
             f"Projected CPM-delta {delta} did not match actual delta {(new_value - old_value)} in move {move}!"
         old_value = new_value
