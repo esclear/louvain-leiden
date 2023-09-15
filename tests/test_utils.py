@@ -4,7 +4,7 @@ from typing import cast
 import networkx as nx
 import pytest
 
-from community_detection.utils import Partition, aggregate_graph, argmax, freeze, node_total
+from community_detection.utils import Partition, argmax, freeze, node_total
 
 # Don't let black destroy the manual formatting in this document:
 # fmt: off
@@ -129,13 +129,13 @@ def test_partition_flatten() -> None:
     assert 𝓡.flatten() == 𝓡
 
     # Calculate an aggregate graph by repeatedly merging, starting with the non-trivial partition from above:
-    H = aggregate_graph(G, 𝓡)
+    H = 𝓡.aggregate_graph()
     # On the aggregate graph H, define a new partition, consisting of three communities.
     # It combines the nodes 0..4, 5..6, and 7..9 of the *underlying graph* G into one community each.
     # That is, combine sets 0 and 1 ({0,1,2} and {3,4}), take set 2 ({5,6}), and combine sets 3 and 4 ({7,8} and {9}):
     𝓢 = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
 
-    I = aggregate_graph(H, 𝓢)
+    I = 𝓢.aggregate_graph()
     𝓣 = Partition.singleton_partition(I)
 
     𝓕 = 𝓣.flatten()
@@ -165,7 +165,7 @@ def test_aggregate_graph() -> None:
     communities = [{0}, {1, 2}, {3, 4}]
     𝓟 = Partition.from_partition(G, communities)
 
-    H = aggregate_graph(G, 𝓟)
+    H = 𝓟.aggregate_graph()
 
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)
@@ -184,8 +184,8 @@ def test_aggregate_graph() -> None:
     assert H[2][2]["weight"] == 1
 
     # With an additional partition, generate an additional aggregate graph
-    𝓠 = Partition.from_partition(H, [{0, 1}, {2}])
-    J = aggregate_graph(H, 𝓠, "weight")
+    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], weight="weight")
+    J = 𝓠.aggregate_graph()
 
     # Verify that the nodes of the aggregate graph correspond to the communities
     assert list(J.nodes(data="nodes")) == [(0, frozenset({0, 1})), (1, frozenset({2}))]
@@ -205,7 +205,7 @@ def test_degree_sums() -> None:
     assert 𝓟.degree_sum(1) == 𝓟.degree_sum(2) == 8
     assert 𝓟.degree_sum(3) == 𝓟.degree_sum(4) == 8
 
-    H = aggregate_graph(G, 𝓟)
+    H = 𝓟.aggregate_graph()
 
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)

@@ -182,6 +182,34 @@ class Partition(Generic[T]):
 
         return self
 
+    def aggregate_graph(self) -> Graph:
+        """
+        Create an aggregate graph of the graph G with regards to this partition.
+
+        The aggregate graph is a multigraph, in which the nodes of every partition set have been coalesced into a single
+        node. Every edge between two nodes a and b is represented by an edge in the multigraph, between the nodes that
+        represent the communities that a and b, respectively, are members of.
+        """
+        # Determine the numer of communities and get a list of the communities
+        n_c = len(self._sets)
+        node_weights = self.G.nodes.data(self._weight, default=1)
+
+        # Create graph H that will become the aggregate graph
+        H = Graph(parent_graph=self.G, parent_partition=self)
+
+        # For every community, add a node in H, also recording the nodes
+        for i, C in enumerate(self._sets):
+            community_weight = sum(node_weights[v] for v in C)
+            H.add_node(i, weight=community_weight, nodes=frozenset(C))
+
+        # For every pair of communities, determine the total weight of edges between them.
+        # This also includes edges between two nodes in the same community, which will form a loop in the aggregate graph.
+        for c_idx, d_idx in combinations_with_replacement(range(n_c), 2):
+            C, D = self._sets[c_idx], self._sets[d_idx]
+            H.add_edge(c_idx, d_idx, weight=cut_size(self.G, C, D, weight=self._weight))
+
+        return H
+
     # We ignore the typing check for the following function, as it is only a read-only function:
     # Using a covariant type variable as a function parameter (as we do here with T) can cause problems.
     # (see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
@@ -266,36 +294,6 @@ def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tup
             val = valₖ
 
     return (opt, val, idx)
-
-
-def aggregate_graph(G: Graph, 𝓟: Partition[T], weight: str | None = None) -> Graph:
-    """
-    Create an aggregate graph of the graph G with regards to the partition 𝓟.
-
-    The aggregate graph is a multigraph, in which the nodes of every partition set have been coalesced into a single
-    node. Every edge between two nodes a and b is represented by an edge in the multigraph, between the nodes that
-    represent the communities that a and b, respectively, are members of.
-    """
-    # Determine the numer of communities and get a list of the communities
-    n_c = len(𝓟)
-    communities = list(𝓟.communities)
-    node_weights = G.nodes.data(weight, default=1)
-
-    # Create graph H that will become the aggregate graph
-    H = Graph(parent_graph=G, parent_partition=𝓟)
-
-    # For every community, add a node in H, also recording the nodes
-    for i, C in enumerate(communities):
-        community_weight = sum(node_weights[v] for v in C)
-        H.add_node(i, weight=community_weight, nodes=frozenset(C))
-
-    # For every pair of communities, determine the total weight of edges between them.
-    # This also includes edges between two nodes in the same community, which will form a loop in the aggregate graph.
-    for c_idx, d_idx in combinations_with_replacement(range(n_c), 2):
-        C, D = communities[c_idx], communities[d_idx]
-        H.add_edge(c_idx, d_idx, weight=cut_size(G, C, D, weight=weight))
-
-    return H
 
 
 def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weight: None | str = None) -> float:

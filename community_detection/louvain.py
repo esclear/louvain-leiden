@@ -11,7 +11,7 @@ from random import shuffle
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, preprocess_graph
+from .utils import Partition, argmax, preprocess_graph
 
 T = TypeVar("T")
 
@@ -35,7 +35,7 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None) 
 
         # Second phase: Aggregation of the network
         # Create the aggregate graph of G based on the partition 𝓟
-        G = aggregate_graph(G, 𝓟, "weight")
+        G = 𝓟.aggregate_graph()
         # And update 𝓟 to be a singleton partition of G, i.e. every node in the aggregate graph G is assigned to its own community.
         𝓟 = Partition.singleton_partition(G, "weight")
 

@@ -13,7 +13,7 @@ import networkx as nx
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import Partition, aggregate_graph, argmax, freeze, node_total, preprocess_graph
+from .utils import Partition, argmax, freeze, node_total, preprocess_graph
 
 T = TypeVar("T")
 
@@ -57,7 +57,7 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
 
         𝓟ᵣ = refine_partition(G, 𝓟, 𝓗, θ, γ)
         # Create the aggregate graph of G based on 𝓟ᵣ …
-        G = aggregate_graph(G, 𝓟ᵣ)
+        G = 𝓟ᵣ.aggregate_graph()
 
         # … but maintain partition 𝓟
         𝓟 = Partition.from_partition(G, [{v for v in G.nodes if G.nodes[v]["nodes"] <= C} for C in 𝓟])
