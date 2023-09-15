@@ -44,6 +44,8 @@ def leiden(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, �
     # If there is no partition given, start with all nodes in the same community
     if 𝓟 is None:
         𝓟 = Partition.from_partition(G, [{v for v in G.nodes}])
+    else:
+        assert 𝓟.G == G, "The partition is not one for the graph provided!"
 
     while True:
         𝓟 = move_nodes_fast(G, 𝓟, 𝓗)

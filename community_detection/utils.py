@@ -209,7 +209,7 @@ class Partition(Generic[T]):
         G: Graph = Partition.__find_original_graph(self.G)
         𝓟 = [Partition.__collect_nodes(self.G, C) for C in self._sets]
 
-        return Partition.from_partition(G, 𝓟)
+        return Partition.from_partition(G, 𝓟, weight=self._weight)
 
     @property
     def communities(self) -> tuple[set[T], ...]:
