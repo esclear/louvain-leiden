@@ -18,13 +18,13 @@ class QualityMetric(ABC, Generic[T]):
     """A metric that, when called, measures the quality of a partition into communities."""
 
     @abstractmethod
-    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
+    def __call__(self, 𝓟: Partition[T]) -> float:
         """Measure the quality of the given partition as applied to the graph provided."""
         raise NotImplementedError()
 
-    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T]) -> float:
+    def delta(self, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T]) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
-        baseline = self(G, 𝓟, 𝓟.weight)
+        baseline = self(𝓟, 𝓟.weight)
         moved = copy(𝓟).move_node(v, target)
         return self(G, moved, 𝓟.weight) - baseline
 
@@ -36,7 +36,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
         self.γ: float = γ
 
-    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
+    def __call__(self, 𝓟: Partition[T]) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
         m = 𝓟.graph_size
 
@@ -49,7 +49,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the total weight of edges within that community:
-            e_c = nx.induced_subgraph(G, C).size(weight=𝓟._weight)  # TODO: Can this be cached
+            e_c = nx.induced_subgraph(𝓟.G, C).size(weight=𝓟._weight)  # TODO: Can this be cached
             # Also determine the total sum of node degrees in the community C
             deg_c = 𝓟.degree_sum(next(iter(C)))
 
@@ -61,7 +61,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         # Calculate the constant potts model by adding the summands for all communities:
         return sum(map(community_summand, 𝓟)) / (2 * m)
 
-    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T]) -> float:
+    def delta(self, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T]) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
         if v in target:
             return 0.0
@@ -70,11 +70,11 @@ class Modularity(QualityMetric[T], Generic[T]):
         m = 𝓟.graph_size
         # Now, calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
         source_community = 𝓟.node_community(v)
-        diff_source = single_node_neighbor_cut_size(G, v, set(u for u in source_community if u != v), 𝓟._weight)
-        diff_target = single_node_neighbor_cut_size(G, v, target, 𝓟._weight)
+        diff_source = single_node_neighbor_cut_size(𝓟.G, v, set(u for u in source_community if u != v), 𝓟._weight)
+        diff_target = single_node_neighbor_cut_size(𝓟.G, v, target, 𝓟._weight)
 
         # Get the necessary degrees
-        deg_v = G.degree(v, weight=𝓟._weight)
+        deg_v = 𝓟.G.degree(v, weight=𝓟._weight)
         degs_source = 𝓟.degree_sum(v)
         degs_target = 𝓟.degree_sum(next(iter(target))) if target else 0
 
@@ -89,15 +89,15 @@ class CPM(QualityMetric[T], Generic[T]):
         """Create a new instance of the Constant Potts Model with the given resolution parameter γ."""
         self.γ: float = γ
 
-    def __call__(self, G: Graph, 𝓟: Partition[T]) -> float:
+    def __call__(self, 𝓟: Partition[T]) -> float:
         """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
 
         def community_summand(C: set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the total weight of edges within that community:
-            e_c = nx.induced_subgraph(G, C).size(weight=𝓟._weight)
+            e_c = nx.induced_subgraph(𝓟.G, C).size(weight=𝓟._weight)
             # Also get the number of nodes in this community.
-            node_weights = G.nodes.data(𝓟._weight, default=1)
+            node_weights = 𝓟.G.nodes.data(𝓟._weight, default=1)
             n_c: int = sum(node_weights[u] for u in C)
 
             # From this, calculate the contribution of community c:
@@ -106,18 +106,18 @@ class CPM(QualityMetric[T], Generic[T]):
         # Calculate the constant potts model by adding the summands for all communities:
         return sum(map(community_summand, 𝓟))
 
-    def delta(self, G: Graph, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T]) -> float:
+    def delta(self, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T]) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
         if v in target:
             return 0.0
 
         # First calculate the difference in the source and target communities in the `E(C,C)` value for removing / adding v.
         source_community = 𝓟.node_community(v)
-        diff_source = single_node_neighbor_cut_size(G, v, set(u for u in source_community if u != v), 𝓟._weight)
-        diff_target = single_node_neighbor_cut_size(G, v, target, 𝓟._weight)
+        diff_source = single_node_neighbor_cut_size(𝓟.G, v, set(u for u in source_community if u != v), 𝓟._weight)
+        diff_target = single_node_neighbor_cut_size(𝓟.G, v, target, 𝓟._weight)
 
         # Determine the weight of v and the total weights of the source community (with v) and the target community (without v)
-        node_weights = G.nodes.data(𝓟._weight, default=1)
+        node_weights = 𝓟.G.nodes.data(𝓟._weight, default=1)
         v_weight = node_weights[v]
         source_weight = sum(node_weights[u] for u in source_community)
         target_weight = sum(node_weights[u] for u in target)

@@ -23,15 +23,15 @@ def test_modularity_trivial_values() -> None:
 
     𝓗: QualityMetric[int] = Modularity(1)
 
-    assert 0.0 == 𝓗(C, 𝓟)
-    assert abs(-0.1 - 𝓗(C, 𝓠)) < PRECISION
+    assert 0.0 == 𝓗(𝓟)
+    assert abs(-0.1 - 𝓗(𝓠)) < PRECISION
 
     # For empty graphs, the modularity is not defined. We return NaN in this case:
     E = nx.empty_graph(10)
     𝓟 = Partition.from_partition(E, 𝓟)
-    assert isnan(𝓗(E, 𝓟))
+    assert isnan(𝓗(𝓟))
     𝓠 = Partition.from_partition(E, 𝓠)
-    assert isnan(𝓗(E, 𝓠))
+    assert isnan(𝓗(𝓠))
 
 
 def test_modularity_example() -> None:
@@ -50,9 +50,9 @@ def test_modularity_example() -> None:
     # Start with the (original) singleton partition
     𝓟 = Partition.from_partition(G, [ {0,1,2,3}, {4,5,6}, {7,8,9} ])
 
-    print(f"{𝓗(G, 𝓟)=}")
+    print(f"{𝓗(𝓟)=}")
     expected = 0.4896
-    assert abs( 𝓗(G, 𝓟) - expected ) < 1E-4, f"{𝓗(G, 𝓟)=} != {expected}=expected"
+    assert abs( 𝓗(𝓟) - expected ) < 1E-4, f"{𝓗(𝓟)=} != {expected}=expected"
 
 
 def test_modularity_random() -> None:
@@ -66,10 +66,10 @@ def test_modularity_random() -> None:
         # Start with the (original) singleton partition
         𝓟 = Partition.from_partition(G, partition_randomly(nodes))
 
-        our_mod = 𝓗(G, 𝓟)
+        our_mod = 𝓗(𝓟)
         reference_mod = nx.community.modularity(G, 𝓟.as_set(), weight=None, resolution=1)
 
-        assert abs( our_mod - reference_mod ) < PRECISION, f"𝓗(G, 𝓟) = {our_mod} != {reference_mod} = expected"
+        assert abs( our_mod - reference_mod ) < PRECISION, f"𝓗(𝓟) = {our_mod} != {reference_mod} = expected"
 
 
 def test_modularity_delta() -> None:
@@ -88,7 +88,7 @@ def test_modularity_delta() -> None:
     𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}], weight="weight")
 
     # Initialize the variable in which we will accumulate the delta values
-    old_value = 𝓗(B, 𝓟)
+    old_value = 𝓗(𝓟)
 
     # A sequence of move sequences, described as tuples of a node and the community to move it into
     # The first move moves a node into its current community (i.e. a no-op) - we expect a delta of 0 to be calculated here
@@ -96,10 +96,10 @@ def test_modularity_delta() -> None:
 
     # Now, carry out the moves and note down the accumulate the projected differences for each move
     for move in moves:
-        delta = 𝓗.delta(B, 𝓟, move[0], move[1])
+        delta = 𝓗.delta(𝓟, move[0], move[1])
         𝓟.move_node(*move)
 
-        new_value = 𝓗(B, 𝓟)
+        new_value = 𝓗(𝓟)
         assert abs( (new_value - old_value) - delta ) < PRECISION, \
             f"Projected Modularity-delta {delta} did not match actual delta {(new_value - old_value)} in move {move}!"
         old_value = new_value
@@ -111,17 +111,19 @@ def test_modularity_delta() -> None:
 def test_cpm_trivial_values() -> None:
     """Test CPM calculation for some trivial  graphs and partitions to see if the values match the expectation."""
     C = nx.complete_graph(10)
-    𝓟 = Partition.from_partition(C, [{i for i in range(10)}])
     E = nx.empty_graph(10)
-    𝓠 = Partition.from_partition(E, [{i} for i in range(10)])
+    𝓟_C = Partition.from_partition(C, [{i for i in range(10)}])
+    𝓟_E = Partition.from_partition(E, [{i for i in range(10)}])
+    𝓠_C = Partition.from_partition(C, [{i} for i in range(10)])
+    𝓠_E = Partition.from_partition(E, [{i} for i in range(10)])
 
     𝓗: QualityMetric[int] = CPM(0.25)
 
     # Values calculated manually for γ = 0.25:
-    assert -11.25 == 𝓗(E, 𝓟)  # The empty graph (no edges) with the trivial partition has CPM -11.25
-    assert   0.00 == 𝓗(E, 𝓠)  # Empty graph with singleton partition has CPM 0 (better than the trivial partition)
-    assert   0.00 == 𝓗(C, 𝓠)  # Complete graph K_10 with singleton partition has CPM 0
-    assert  33.75 == 𝓗(C, 𝓟)  # The graph K_10 with the trivial partition has CPM 33.75 (improves singleton partition)
+    assert -11.25 == 𝓗(𝓟_E)  # The empty graph (no edges) with the trivial partition has CPM -11.25
+    assert   0.00 == 𝓗(𝓠_E)  # Empty graph with singleton partition has CPM 0 (better than the trivial partition)
+    assert   0.00 == 𝓗(𝓠_C)  # Complete graph K_10 with singleton partition has CPM 0
+    assert  33.75 == 𝓗(𝓟_C)  # The graph K_10 with the trivial partition has CPM 33.75 (improves singleton partition)
 
 
 def test_cpm_example_from_material() -> None:
@@ -144,11 +146,11 @@ def test_cpm_example_from_material() -> None:
 
     # Values calculated manually for and the (4,0)-barbell graph:
     # Unweighted (does not correspond to supplementary information)
-    assert 𝓗(B, 𝓞) == 0
-    assert 𝓗(B, 𝓝) == 0
+    assert 𝓗(𝓞) == 0
+    assert 𝓗(𝓝) == 0
     # Weighted (as in the supplementary material)
-    assert 𝓗(B, 𝓞_w) == 15
-    assert 𝓗(B, 𝓝_w) == 14
+    assert 𝓗(𝓞_w) == 15
+    assert 𝓗(𝓝_w) == 14
 
 
 def test_cpm_delta() -> None:
@@ -167,7 +169,7 @@ def test_cpm_delta() -> None:
     𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}], "weight")
 
     # Initialize the variable in which we will accumulate the delta values
-    old_value = 𝓗(B, 𝓟)
+    old_value = 𝓗(𝓟)
 
     # A sequence of move sequences, described as tuples of a node and the community to move it into
     # The first move moves a node into its current community (i.e. a no-op) - we expect a delta of 0 to be calculated here
@@ -175,10 +177,10 @@ def test_cpm_delta() -> None:
 
     # Now, carry out the moves and note down the accumulate the projected differences for each move
     for move in moves:
-        delta = 𝓗.delta(B, 𝓟, move[0], move[1])
+        delta = 𝓗.delta(𝓟, move[0], move[1])
         𝓟.move_node(*move)
 
-        new_value = 𝓗(B, 𝓟)
+        new_value = 𝓗(𝓟)
         assert abs( (new_value - old_value) - delta ) < PRECISION, \
             f"Projected CPM-delta {delta} did not match actual delta {(new_value - old_value)} in move {move}!"
         old_value = new_value

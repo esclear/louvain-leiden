@@ -46,7 +46,7 @@ def test_louvain_modularity_comparison_networkx_karate_club() -> None:
         return mod
 
     # Save modularities calculated by our and NX' modularity functions of partitions calculated by us and NetworkX.
-    olom, olnm, nlom, nlnm = 𝓗(G, 𝓟), nxMod(𝓟), 𝓗(G, 𝓠), nxMod(𝓠)
+    olom, olnm, nlom, nlnm = 𝓗(𝓟), nxMod(𝓟), 𝓗(𝓠), nxMod(𝓠)
 
     print("Final modularities   | our Louvain impl. | NX' Louvain impl.")
     print(f"Our modularity impl. |      {olom:03.10f} |      {nlom:03.10f} ")
@@ -95,7 +95,7 @@ def test_louvain_modularity_comparison_networkx_jazz_musicians() -> None:
         return mod
 
     # Save modularities calculated by our and NX' modularity functions of partitions calculated by us and NetworkX.
-    olom, olnm, nlom, nlnm = 𝓗(G, 𝓟), nxMod(𝓟), 𝓗(G, 𝓠), nxMod(𝓠)
+    olom, olnm, nlom, nlnm = 𝓗(𝓟), nxMod(𝓟), 𝓗(𝓠), nxMod(𝓠)
 
     print("Final modularities   | our Louvain impl. | NX' Louvain impl.")
     print(f"Our modularity impl. |      {olom:03.10f} |      {nlom:03.10f} ")

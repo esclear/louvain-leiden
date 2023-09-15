@@ -81,7 +81,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
 
         # Find best community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
-        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(G, 𝓟, v, C), [*𝓟, set()])
+        (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(𝓟, v, C), [*𝓟, set()])
 
         # If we can achieve a strict improvement
         if 𝛥𝓗 > 0:
@@ -136,7 +136,7 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
 
             # Have a list of pairs of communities in 𝓣 together with the improvement (𝛥𝓗) of moving v to the community
             # Only consider communities for which the quality function doesn't degrade, if v is moved there
-            communities = [(C, 𝛥𝓗) for (C, 𝛥𝓗) in ((C, 𝓗.delta(G, 𝓟, v, C)) for C in 𝓣) if 𝛥𝓗 >= 0]
+            communities = [(C, 𝛥𝓗) for (C, 𝛥𝓗) in ((C, 𝓗.delta(𝓟, v, C)) for C in 𝓣) if 𝛥𝓗 >= 0]
             # Calculate the weights for the random choice using the 𝛥𝓗 values
             weights = [exp(𝛥𝓗 / θ) for (C, 𝛥𝓗) in communities]
 
