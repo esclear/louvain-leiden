@@ -230,6 +230,12 @@ class Partition(Generic[T]):
         """Get the community the node v is currently part of."""
         return self._sets[self._node_part[v]]
 
+    # Similar to node_community: adjacent_communities does not change the Partition, but solely provides access to some of its data.
+    def adjacent_communities(self, v: T) -> set[frozenset[T]]:  # type: ignore
+        """Get the set of communities which have nodes are adjacent to v, *always including* v's community."""
+        neighbor_community_ids = {self._node_part[u] for u in self.G[v]} | {self._node_part[v]}
+        return {frozenset(self._sets[i]) for i in neighbor_community_ids}
+
     def as_set(self) -> set[frozenset[T]]:
         """Return a set of sets of nodes that represents the communities."""
         return freeze(self.communities)
