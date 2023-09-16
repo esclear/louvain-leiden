@@ -170,7 +170,7 @@ def test_aggregate_graph() -> None:
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)
     assert H.order() == 3
-    assert H.size() == 6
+    assert H.size() == 5
 
     # Verify that the nodes of the aggregate graph correspond to the communities
     assert list(H.nodes(data=DataKeys.NODES)) == [(0, frozenset({0})), (1, frozenset({1, 2})), (2, frozenset({3,4}))]
@@ -179,7 +179,7 @@ def test_aggregate_graph() -> None:
     assert H[0][2][DataKeys.WEIGHT] == 2
     assert H[1][2][DataKeys.WEIGHT] == 4
     # Also check that self-loops for the communities are correct
-    assert H[0][0][DataKeys.WEIGHT] == 0
+    assert not H.has_edge(0, 0)
     assert H[1][1][DataKeys.WEIGHT] == 1
     assert H[2][2][DataKeys.WEIGHT] == 1
 
@@ -210,7 +210,7 @@ def test_degree_sums() -> None:
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)
     assert H.order() == 3
-    assert H.size() == 6
+    assert H.size() == 5
 
     # With an additional partition, generate an additional aggregate graph
     𝓠 = Partition.from_partition(H, [{0, 1}, {2}], DataKeys.WEIGHT)

@@ -219,7 +219,9 @@ class Partition(Generic[T]):
         # This also includes edges between two nodes in the same community, which will form a loop in the aggregate graph.
         for c_idx, d_idx in combinations_with_replacement(range(n_c), 2):
             C, D = self._sets[c_idx], self._sets[d_idx]
-            H.add_edge(c_idx, d_idx, **{DataKeys.WEIGHT: cut_size(self.G, C, D, weight=self._weight)})
+            weight = cut_size(self.G, C, D, weight=self._weight)
+            if weight > 0:
+                H.add_edge(c_idx, d_idx, **{DataKeys.WEIGHT: weight})
 
         return H
 
