@@ -122,7 +122,7 @@ class Partition(Generic[T]):
             return sum((Partition.__collect_nodes(H, G.nodes[n][DataKeys.NODES]) for n in nodes), [])
 
     @staticmethod
-    def __find_original_graph(G: Graph) -> tuple[Graph, list[T]]:
+    def __find_original_graph(G: Graph) -> Graph:
         """Find the original graph of an aggregate partition."""
         if DataKeys.PARENT_GRAPH in G.graph:
             return Partition.__find_original_graph(G.graph[DataKeys.PARENT_GRAPH])
@@ -314,7 +314,7 @@ def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tup
             opt = optₖ
             val = valₖ
 
-    return (opt, val, idx)
+    return opt, val, idx
 
 
 def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weight: str = None) -> float:

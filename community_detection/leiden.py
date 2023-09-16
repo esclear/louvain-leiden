@@ -89,7 +89,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
             𝓟.move_node(v, Cₘ)
 
             # Identify neighbors of v that are not in Cₘ
-            N = {u for u in G.neighbors(v) if u not in Cₘ}
+            N = {u for u in G[v] if u not in Cₘ}
 
             # Visit these neighbors as well
             Q.extend(N - set(Q))

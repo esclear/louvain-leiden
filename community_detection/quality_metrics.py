@@ -7,7 +7,6 @@ from math import comb
 from typing import Generic, TypeVar
 
 import networkx as nx
-from networkx import Graph
 
 from .utils import Partition, single_node_neighbor_cut_size
 
@@ -24,9 +23,8 @@ class QualityMetric(ABC, Generic[T]):
 
     def delta(self, 𝓟: Partition[T], v: T, target: set[T] | frozenset[T]) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
-        baseline = self(𝓟, 𝓟.weight)
         moved = copy(𝓟).move_node(v, target)
-        return self(G, moved, 𝓟.weight) - baseline
+        return self(moved) - self(𝓟)
 
 
 class Modularity(QualityMetric[T], Generic[T]):
