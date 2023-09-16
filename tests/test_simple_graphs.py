@@ -12,13 +12,13 @@ as is the case with the example of the weighted (4,0) barbell graph in the later
 """
 
 import random
+
 import networkx as nx
 
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
 from community_detection.quality_metrics import CPM, Modularity, QualityMetric
-from community_detection.utils import freeze, Partition
-
+from community_detection.utils import freeze
 
 #######################
 # (5,2) BARBELL GRAPH #

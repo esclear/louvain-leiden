@@ -16,7 +16,6 @@ from typing import (  # noqa: UP035 # ruff recommends to import Callable, Iterab
 from networkx import Graph, cut_size
 from networkx.algorithms.community import community_utils
 
-
 T = TypeVar("T", covariant=True)
 
 
@@ -36,7 +35,9 @@ class DataKeys:
 class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
-    def __init__(self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT):
+    def __init__(
+            self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT
+    ) -> None:
         """
         Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
 

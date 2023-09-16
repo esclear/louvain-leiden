@@ -5,13 +5,14 @@ This implementation follows the outline provided in the supplementary material o
 guaranteeing well-connected communities" by V.A. Traag, L. Waltman and N.J. van Eck.
 """
 
-from typing import TypeVar
 from random import shuffle
+from typing import TypeVar
 
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import DataKeys as Keys, Partition, argmax, preprocess_graph
+from .utils import DataKeys as Keys
+from .utils import Partition, argmax, preprocess_graph
 
 T = TypeVar("T")
 
@@ -52,7 +53,7 @@ def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partitio
         for v in Q:
             # Find an optimal community for node `v` to be in, potentially creating a new community.
             # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ (value at beginning of outer loop), reached by moving v into Cₘ.
-            (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(𝓟, v, C), [*𝓟.adjacent_communities(v), set()])
+            (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(𝓟, v, C), [*𝓟.adjacent_communities(v), set()])  # noqa: B023
 
             # If we get a strictly better value, assign v to community Cₘ
             if 𝛥𝓗 > 0:

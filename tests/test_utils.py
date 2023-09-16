@@ -135,8 +135,8 @@ def test_partition_flatten() -> None:
     # That is, combine sets 0 and 1 ({0,1,2} and {3,4}), take set 2 ({5,6}), and combine sets 3 and 4 ({7,8} and {9}):
     𝓢 = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
 
-    I = 𝓢.aggregate_graph()
-    𝓣 = Partition.singleton_partition(I)
+    J = 𝓢.aggregate_graph()
+    𝓣 = Partition.singleton_partition(J)
 
     𝓕 = 𝓣.flatten()
     assert freeze(𝓕.communities) == freeze([[0, 1, 2, 3, 4], [5, 6], [7, 8, 9]])
@@ -144,7 +144,7 @@ def test_partition_flatten() -> None:
 
 def test_argmax() -> None:
     with pytest.raises(ValueError):
-        argmax(lambda x: x, []) is None
+        assert argmax(lambda x: x, []) is None
 
     # argmax returns tuples of the form (arg, value, index)
     # check that for constant arguments and values the first index (0) is chosen:

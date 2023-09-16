@@ -32,13 +32,18 @@ exclude_also = [
 
 [tool.ruff]
 line-length = 140
-select = [ "E", "F", "D", "UP" ]
+select = [ "E", "F", "D", "UP", "W", "I", "ANN", "B", "RUF", "PL" ]
+ignore = ["RUF001", "RUF002", "RUF003", "ANN101", "ANN102"]
 
-extend-exclude = ["tests"]
+[tool.ruff.per-file-ignores]
+# For the tests, ignore
+"tests/*" = ["D100", "D103", "D104", "E501", "PLR2004"]
 
 [tool.ruff.pydocstyle]
 convention = "pep257"
 
+[tool.ruff.pylint]
+max-args = 6
 
 [tool.mypy]
 strict = true

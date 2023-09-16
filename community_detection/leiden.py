@@ -13,7 +13,8 @@ import networkx as nx
 from networkx import Graph
 
 from .quality_metrics import QualityMetric
-from .utils import DataKeys as Keys, Partition, argmax, freeze, node_total, preprocess_graph
+from .utils import DataKeys as Keys
+from .utils import Partition, argmax, freeze, node_total, preprocess_graph
 
 T = TypeVar("T")
 

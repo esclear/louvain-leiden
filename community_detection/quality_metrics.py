@@ -30,7 +30,7 @@ class QualityMetric(ABC, Generic[T]):
 class Modularity(QualityMetric[T], Generic[T]):
     """Implementation of Modularity as a quality function."""
 
-    def __init__(self, γ: float = 0.25):
+    def __init__(self, γ: float = 0.25) -> None:
         """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
         self.γ: float = γ
 
@@ -83,7 +83,7 @@ class Modularity(QualityMetric[T], Generic[T]):
 class CPM(QualityMetric[T], Generic[T]):
     """Implementation of the Constant Potts Model (CPM) as a quality function."""
 
-    def __init__(self, γ: float = 0.25):
+    def __init__(self, γ: float = 0.25) -> None:
         """Create a new instance of the Constant Potts Model with the given resolution parameter γ."""
         self.γ: float = γ
 
