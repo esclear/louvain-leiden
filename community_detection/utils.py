@@ -135,6 +135,7 @@ class Partition(Generic[T]):
         cls = self.__class__
         cpy = cls.__new__(cls)
         cpy.G = self.G
+        cpy.graph_size = self.graph_size
         cpy._sets = deepcopy(self._sets)
         cpy._node_part = self._node_part.copy()
         cpy._partition_degree_sums = self._partition_degree_sums.copy()
