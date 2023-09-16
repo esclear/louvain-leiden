@@ -44,11 +44,11 @@ def leiden(
     # For every edge, assign an edge weight attribute of 1, if no weight is set yet.
     G = preprocess_graph(G, weight)
 
-    # If there is a partition given, use it, else start with all nodes in the same community
+    # If there is a partition given, use it, else start with a singleton partition of the graph
     if 𝓟:
         𝓟 = Partition.from_partition(G, 𝓟, Keys.WEIGHT)
     else:
-        𝓟 = Partition.from_partition(G, [{v for v in G.nodes}], Keys.WEIGHT)
+        𝓟 = Partition.singleton_partition(G, Keys.WEIGHT)
 
     while True:
         𝓟 = move_nodes_fast(G, 𝓟, 𝓗)
