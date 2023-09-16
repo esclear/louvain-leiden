@@ -1,5 +1,6 @@
 import random
 
+
 def partition_randomly(xs: list[int]) -> list[list[int]]:
     xs = list(xs)
     random.shuffle(xs)

@@ -4,7 +4,7 @@ import networkx as nx
 
 from community_detection.louvain import louvain
 from community_detection.quality_metrics import Modularity, QualityMetric
-from community_detection.utils import DataKeys, Partition
+from community_detection.utils import Partition
 
 PRECISION = 1e-15
 
@@ -17,9 +17,6 @@ def test_louvain_modularity_comparison_networkx_karate_club() -> None:
     # sports club. The nodes represent two trainers and 32 students, the edges represent interactions between two
     # people.
     G = nx.karate_club_graph()
-
-    # We use modularity as quality function, with a resolution of 1.
-    𝓗: QualityMetric[int] = Modularity(1)
 
     # As the louvain algorithm is randomized, seed the RNG with a static value so that tests are reproducible.
     # Those seeds for our, respectively NetworkX' implementation produce the same result
@@ -60,7 +57,7 @@ def test_louvain_modularity_comparison_networkx_karate_club() -> None:
     assert abs(olnm - nlnm) < PRECISION, "The modularity (NX' implementation) does not match between our and NetworkX' implementation of the Louvain algorithm!"
 
     # With the seed of 0 chosen above, the communities calculated by us and NetworkX even match:
-    assert P.as_set() == Q.as_set(), "The communities calculated by our implementation does not match the ones calculated by NetworkX's implementation of the Louvain algorithm!"
+    assert 𝓟.as_set() == 𝓠.as_set(), "The communities calculated by our implementation does not match the ones calculated by NetworkX's implementation of the Louvain algorithm!"
 
 
 def test_louvain_modularity_comparison_networkx_jazz_musicians() -> None:
@@ -109,4 +106,4 @@ def test_louvain_modularity_comparison_networkx_jazz_musicians() -> None:
     assert abs(olnm - nlnm) < PRECISION, "The modularity (NX' implementation) does not match between our and NetworkX' implementation of the Louvain algorithm!"
 
     # With the seeds chosen above, the communities calculated by us and NetworkX even match:
-    assert P.as_set() == Q.as_set(), "The communities calculated by our implementation does not match the ones calculated by NetworkX's implementation of the Louvain algorithm!"
+    assert 𝓟.as_set() == 𝓠.as_set(), "The communities calculated by our implementation does not match the ones calculated by NetworkX's implementation of the Louvain algorithm!"
