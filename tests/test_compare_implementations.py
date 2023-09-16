@@ -35,12 +35,12 @@ def test_louvain_modularity_comparison_networkx_karate_club() -> None:
 
     # We compare the result to a partition calculated by the NetworkX library.
     # Due to the randomized nature of the louvain algorithm, we need to supply the implementation with a seed
-    # so that the result stays consistent. Otherwise the calculated communities will change between runs!
-    𝓠 = Partition.from_partition(G, nx.community.louvain_communities(G, weight="weight", resolution=1, seed=0), weight="weight")
+    # so that the result stays consistent. Otherwise, the calculated communities will change between runs!
+    𝓠 = Partition.from_partition(G, nx.community.louvain_communities(G, weight="weight", resolution=1, seed=NX_SEED), weight="weight")
     print(f"Reference partition: {𝓠.as_set()=}")
 
     # The following function uses NetworkX' implementation of modularity and makes it available so that we can use it
-    # as a reference implementaiton to compare the values calculated by our implementation against.
+    # as a reference implementation to compare the values calculated by our implementation against.
     def nxMod(𝓡: Partition[int]) -> float:
         mod: float = nx.community.modularity(G, 𝓡.as_set(), weight="weight", resolution=1)
         return mod
@@ -84,12 +84,12 @@ def test_louvain_modularity_comparison_networkx_jazz_musicians() -> None:
 
     # We compare the result to a partition calculated by the NetworkX library.
     # Due to the randomized nature of the louvain algorithm, we need to supply the implementation with a seed
-    # so that the result stays consistent. Otherwise the calculated communities will change between runs!
+    # so that the result stays consistent. Otherwise, the calculated communities will change between runs!
     𝓠 = Partition.from_partition(G, nx.community.louvain_communities(G, weight="weight", resolution=1, seed=NX_SEED), weight="weight")
     print(f"Reference partition: {𝓠.as_set()=}")
 
     # The following function uses NetworkX' implementation of modularity and makes it available so that we can use it
-    # as a reference implementaiton to compare the values calculated by our implementation against.
+    # as a reference implementation to compare the values calculated by our implementation against.
     def nxMod(𝓡: Partition[int]) -> float:
         mod: float = nx.community.modularity(G, 𝓡.as_set(), weight="weight", resolution=1)
         return mod

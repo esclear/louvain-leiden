@@ -79,7 +79,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
         # Determine next node to visit by popping first node in the queue
         v = Q.pop(0)
 
-        # Find best community for node `v` to be in, potentially creating a new community.
+        # Find an optimal community for node `v` to be in, potentially creating a new community.
         # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ, reached at Cₘ.
         (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(𝓟, v, C), [*𝓟.adjacent_communities(v), set()])
 

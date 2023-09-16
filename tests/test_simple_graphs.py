@@ -4,10 +4,10 @@ Test the Louvain and Leiden algorithms on simple graphs.
 The algorithms are tested against two small graphs, so that the results are traceable by a human.
 
 A note regarding randomness:
-Both the Louvain and the Leiden algoritm are randomized algorithms.
+Both the Louvain and the Leiden algorithm are randomized algorithms.
 To have reproducible test results, every test in this file seeds the random number generator to a constant, predefined value.
 This way, the tests are reproducible and the resulting partitions do not change in every test execution.
-As we only have a hand full of (relevant) reference partitions, some seeds are chosen so that the execution results in a certain partition,
+As we only have a handful of (relevant) reference partitions, some seeds are chosen so that the execution results in a certain partition,
 as is the case with the example of the weighted (4,0) barbell graph in the later section of this file.
 """
 
@@ -84,7 +84,7 @@ def test_louvain_barbell_cpm() -> None:
     # will often belong to one of the communities belonging to one or both of the complete graphs
     random.seed(0)
 
-    # The following resolution parameter for the CPM was found using binary serach on the interval [0.95, 1.05].
+    # The following resolution parameter for the CPM was found using binary search on the interval [0.95, 1.05].
     𝓗: QualityMetric[int] = CPM(0.9999999999999986)
     𝓠 = louvain(G, 𝓗)
 
@@ -185,7 +185,7 @@ def test_louvain_weighted_barbell_cpm() -> None:
     # will often belong to one of the communities belonging to one or both of the complete graphs
     random.seed(0)
 
-    # The following resolution parameter for the CPM was found using binary serach on the interval [0.95, 1.05].
+    # The following resolution parameter for the CPM was found using binary search on the interval [0.95, 1.05].
     𝓗: QualityMetric[int] = CPM(0.9999999999999986)
     𝓠 = louvain(G, 𝓗, weight="weight")
 

@@ -94,7 +94,7 @@ def test_modularity_delta() -> None:
     # The first move moves a node into its current community (i.e. a no-op) - we expect a delta of 0 to be calculated here
     moves = [ (0, {0, 1, 6}), (1, {5, 7}), (0, set()), (6, {1, 5, 7}), (2, {0}), (3, {0, 2}), (4, {0, 2, 3}), (0, {1, 5, 6, 7}), (1, set()), (0, {1}) ]
 
-    # Now, carry out the moves and note down the accumulate the projected differences for each move
+    # Now, carry out the moves and compare the projected and actual differences for each move
     for move in moves:
         delta = 𝓗.delta(𝓟, move[0], move[1])
         𝓟.move_node(*move)
@@ -175,7 +175,7 @@ def test_cpm_delta() -> None:
     # The first move moves a node into its current community (i.e. a no-op) - we expect a delta of 0 to be calculated here
     moves = [ (0, {0, 1, 6}), (1, {5, 7}), (0, set()), (6, {1, 5, 7}), (2, {0}), (3, {0, 2}), (4, {0, 2, 3}), (0, {1, 5, 6, 7}), (1, set()), (0, {1}) ]
 
-    # Now, carry out the moves and note down the accumulate the projected differences for each move
+    # Now, carry out the moves and compare the projected and actual differences for each move
     for move in moves:
         delta = 𝓗.delta(𝓟, move[0], move[1])
         𝓟.move_node(*move)

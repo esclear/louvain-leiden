@@ -51,7 +51,7 @@ class Partition(Generic[T]):
 
         # The partition as a list of sets
         # We store /lists/ of sets instead of /sets/ of sets, because changeable sets in python are not /hashable/ and
-        # thus can't be stored in a set. We could store a set of frozensets instead, however, this would complicate
+        # thus can't be stored in a set. We could store a set of frozen sets instead, however, this would complicate
         # operations such as the move_node operation below, where we modify the partitions.
         self._sets = sets
 
@@ -196,13 +196,13 @@ class Partition(Generic[T]):
 
     def aggregate_graph(self) -> Graph:
         """
-        Create an aggregate graph of the graph G with regards to this partition.
+        Create an aggregate graph of the graph G corresponding to this partition.
 
-        The aggregate graph is a multigraph, in which the nodes of every partition set have been coalesced into a single
-        node. Every edge between two nodes a and b is represented by an edge in the multigraph, between the nodes that
+        The aggregate graph is a multi-graph, in which the nodes of every partition set have been coalesced into a single
+        node. Every edge between two nodes a and b is represented by an edge in the multi-graph, between the nodes that
         represent the communities that a and b, respectively, are members of.
         """
-        # Determine the numer of communities and get a list of the communities
+        # Determine the number of communities and get a list of the communities
         n_c = len(self._sets)
         node_weights = self.G.nodes.data(self._weight, default=1)
 

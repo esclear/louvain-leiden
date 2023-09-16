@@ -21,7 +21,7 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, 
     # For every edge, assign an edge weight attribute of 1, if no weight is set yet.
     G = preprocess_graph(G, weight)
 
-    # If there is a partition given, use it, else start with every node in its' own community
+    # If there is a partition given, use it, else start with every node in its own community
     if 𝓟:
         𝓟 = Partition.from_partition(G, 𝓟, Keys.WEIGHT)
     else:
@@ -50,7 +50,7 @@ def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partitio
         shuffle(Q)
         improved = False
         for v in Q:
-            # Find best community for node `v` to be in, potentially creating a new community.
+            # Find an optimal community for node `v` to be in, potentially creating a new community.
             # Cₘ is the optimal community, 𝛥𝓗 is the increase of 𝓗 over 𝓗ₒ (value at beginning of outer loop), reached by moving v into Cₘ.
             (Cₘ, 𝛥𝓗, _) = argmax(lambda C: 𝓗.delta(𝓟, v, C), [*𝓟.adjacent_communities(v), set()])
 
