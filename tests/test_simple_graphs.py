@@ -52,7 +52,7 @@ def test_louvain_barbell_modularity() -> None:
     assert 𝓠.as_set() == BARBELL_COMS_AND_MID
 
 
-@seed_rng(17)
+@seed_rng(0)
 def test_leiden_barbell_modularity() -> None:
     """
     Test the Leiden algorithm with modularity as the quality function on a (5,2) barbell graph.
@@ -83,7 +83,7 @@ def test_louvain_barbell_cpm() -> None:
     assert 𝓠.as_set() == BARBELL_COMS_AND_MID
 
 
-@seed_rng(41)
+@seed_rng(0)
 def test_leiden_barbell_cpm() -> None:
     """
     Test the Leiden algorithm with CPM as the quality function on a (5,2) barbell graph.
@@ -92,8 +92,8 @@ def test_leiden_barbell_cpm() -> None:
     """
     G = nx.generators.barbell_graph(5, 2)
 
-    𝓗: QualityMetric[int] = CPM(1.0)
-    𝓠 = leiden(G, 𝓗, θ=0.25)
+    𝓗: QualityMetric[int] = CPM(0.8)
+    𝓠 = leiden(G, 𝓗, γ=0.8, θ=0.25)
 
     assert 𝓠.as_set() == BARBELL_COMS_AND_MID
 
@@ -140,7 +140,7 @@ def test_louvain_weighted_barbell_modularity() -> None:
 # This test proves that the Leiden algorithm *can arrive* at the WEIGHTED_BARBELL_GOOD partition, which cannot be reached by the
 # greedy Louvain algorithm (cf. the Louvain and Leiden paper).
 # The seed below leads to *this exact* partition (and not a partition of similar quality)
-@seed_rng(15)
+@seed_rng(0)
 def test_leiden_weighted_barbell_modularity() -> None:
     """
     Test the Leiden algorithm with modularity as the quality function on a weighted (4,0) barbell graph.
@@ -149,7 +149,7 @@ def test_leiden_weighted_barbell_modularity() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityMetric[int] = Modularity(1.6)
+    𝓗: QualityMetric[int] = Modularity(0.75)
     𝓠 = leiden(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
@@ -172,7 +172,7 @@ def test_louvain_weighted_barbell_cpm() -> None:
 
 
 # Another seed, leading to the partition that the Louvain algorithm cannot reach.
-@seed_rng(460)
+@seed_rng(0)
 def test_leiden_weighted_barbell_cpm() -> None:
     """
     Test the Leiden algorithm with CPM as the quality function on a weighted (4,0) barbell graph.
@@ -181,7 +181,7 @@ def test_leiden_weighted_barbell_cpm() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityMetric[int] = CPM(1)
-    𝓠 = leiden(G, 𝓗, θ=0.25, weight="weight")
+    𝓗: QualityMetric[int] = CPM(0.5)
+    𝓠 = leiden(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD

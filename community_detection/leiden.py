@@ -20,7 +20,7 @@ T = TypeVar("T")
 
 
 def leiden(
-    G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, θ: float = 0.05, γ: float = 1.0, weight: str | None = None
+    G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, θ: float = 0.3, γ: float = 0.05, weight: str | None = None
 ) -> Partition[T]:
     """
     Perform the Leiden algorithm for community detection.
@@ -35,9 +35,9 @@ def leiden(
         A partition to refine, leave at the default of `None` when not refining an existing partition.
     θ : float, optional
         The θ parameter of the Leiden method, which determines the randomness in the refinement phase of the Leiden
-        algorithm, default value of 0.05
+        algorithm, default value of 0.3
     γ : float, optional
-        The γ parameter of the Leiden method, default value of 3.0
+        The γ parameter of the Leiden method, default value of 0.05
 
     :returns: A partition of G into communities
     """
