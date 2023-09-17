@@ -142,6 +142,12 @@ class Partition(Generic[T]):
         cpy._weight = self._weight
         return cpy
 
+    def __eq__(self, other):
+        """Check whether two partitions are equal."""
+        if isinstance(other, Partition):
+            return self._sets == other._sets and self._weight == other._weight
+        return NotImplemented
+
     def __iter__(self) -> Iterator[set[T]]:
         """Make a Partition object iterable, returning an iterator over the communities."""
         return self._sets.__iter__()

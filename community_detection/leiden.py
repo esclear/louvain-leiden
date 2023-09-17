@@ -50,14 +50,27 @@ def leiden(
     else:
         𝓟 = Partition.singleton_partition(G, Keys.WEIGHT)
 
+    # Remember the Previous partition, in order to terminate when the sequence of partitions becomes stationary.
+    # This isn't handled by the provided pseudocode, but this can happen, if γ is chosen too large for the given graph.
+    # In this case, refine_partition will always return the singleton partition of G, which will lead to an endless loop, as G will  become
+    # the aggregate graph of G with respect to the singleton partition, which is just G again.
+    # Thus, 𝓟 will also be set to the value it had before, and, as we got to refine_partition, len(𝓟) != G.order() and thus, we'd get an
+    # infinite loop.
+    𝓟ₚ = None
+
     while True:
         𝓟 = move_nodes_fast(G, 𝓟, 𝓗)
 
-        # When every community consists of a single node only, terminate, returning the flat partition given by 𝓟
-        if len(𝓟) == G.order():
-            # Return the partition 𝓟 in terms of the original graph, G_orig
+        # When every community consists of a single node only, terminate, returning the flat partition given by 𝓟.
+        # Also terminate, if the sequence of partition generated becomes stationary.
+        if len(𝓟) == G.order() or 𝓟 == 𝓟ₚ:
+            # Return the partition 𝓟 in terms of the original graph, which was passed to this function
             return 𝓟.flatten()
 
+        # Remember partition for termination check.
+        𝓟ₚ = 𝓟
+
+        # Refine the partition created by fast local moving, potentially splitting a community into multiple parts
         𝓟ᵣ = refine_partition(G, 𝓟, 𝓗, θ, γ)
         # Create the aggregate graph of G based on 𝓟ᵣ …
         G = 𝓟ᵣ.aggregate_graph()
@@ -117,7 +130,6 @@ def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ:
     """Merge the nodes in the subset S into one or more sets to refine the partition 𝓟."""
     size_s = node_total(G, S)
 
-    # TODO: Handle weight in cut here and in T
     R = {
         v for v in S
           if nx.cut_size(G, [v], S - {v}, weight=Keys.WEIGHT) >= γ * node_total(G, v) * (size_s - node_total(G, v))
