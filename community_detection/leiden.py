@@ -5,6 +5,7 @@ This implementation follows the outline provided in the supplementary material o
 guaranteeing well-connected communities" by V.A. Traag, L. Waltman and N.J. van Eck.
 """
 
+from collections.abc import Set
 from math import exp
 from random import choices, shuffle
 from typing import TypeVar
@@ -126,7 +127,7 @@ def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: f
     return 𝓟ᵣ
 
 
-def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: set[T] | frozenset[T]) -> Partition[T]:
+def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: Set[T]) -> Partition[T]:
     """Merge the nodes in the subset S into one or more sets to refine the partition 𝓟."""
     size_s = node_total(G, S)
 

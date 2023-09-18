@@ -2,22 +2,18 @@
 
 from __future__ import annotations
 
+from collections.abc import Collection, Iterable, Iterator, Set
 from copy import deepcopy
 from itertools import combinations_with_replacement
-from typing import (  # noqa: UP035 # ruff recommends to import Callable, Iterable, Iterator from collections.abc
-    Callable,
-    Collection,
-    Generic,
-    Iterable,
-    Iterator,
-    TypeVar,
-)
+from typing import Callable, Generic, TypeVar, Union, cast
 
 from networkx import Graph, cut_size
 from networkx.algorithms.community import community_utils
 
+S = TypeVar("S")
 T = TypeVar("T", covariant=True)
 
+NodeData = Union[S, 'Collection[NodeData[S]]']
 
 class DataKeys:
     """
@@ -46,23 +42,23 @@ class Partition(Generic[T]):
         assert G.order() == len(node_part), "node_part size doesn't match number of nodes."
         assert degree_sums is not None, "No degree_sums given!"
         # Remember the graph (i.e. a reference to it)
-        self.G = G
+        self.G: Graph = G
 
-        self.graph_size = G.size(weight=weight)
+        self.graph_size: int = G.size(weight=weight)
 
         # The partition as a list of sets
         # We store /lists/ of sets instead of /sets/ of sets, because changeable sets in python are not /hashable/ and
         # thus can't be stored in a set. We could store a set of frozen sets instead, however, this would complicate
         # operations such as the move_node operation below, where we modify the partitions.
-        self._sets = sets
+        self._sets: list[set[T]] = sets
 
         # For faster moving of nodes, store for each node the community it belongs to.
         # This is a dict, mapping each node to its community (the community's index in self._sets).
-        self._node_part = node_part
+        self._node_part: dict[T, int] = node_part
 
         # Store the key which is used for getting the weight information
-        self._weight = weight
-        self._partition_degree_sums = degree_sums
+        self._weight: None | str = weight
+        self._partition_degree_sums: list[int] = degree_sums
 
     @classmethod
     def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T], weight: None | str = None) -> Partition[T]:
@@ -78,43 +74,48 @@ class Partition(Generic[T]):
         # (The order of nested comprehensions is a bit unintuitive in python.)
         node_part = {v: idx for idx, com in enumerate(sets) for v in com}
 
-        partition_degree_sums = [sum(map(lambda t: t[1], G.degree(C, weight=weight))) for C in sets]
+        partition_degree_sums = [sum(map(lambda t: cast(int, t[1]), G.degree(C, weight=weight))) for C in sets]
 
         return cls(G, sets, node_part, partition_degree_sums, weight)
 
     @classmethod
     def singleton_partition(cls, G: Graph, weight: None | str = None) -> Partition[T]:
         """Create a singleton partition, in which each community consists of exactly one vertex."""
+        part_tuples: list[tuple[T, int]]
         # Generate a list of triples containing all necessary information: The community (a singleton set), a (node, index) tuple
         # for the corresponding entry in the node_part lookup dict, and the degree.
         data = [({v}, (v, i), G.degree(v, weight=weight)) for i, v in enumerate(G.nodes)]
         if not data:
             # Handle the empty graphs -> return empty lists and empty lookup dict
-            sets, node_part, degree_sums = [], dict(), []
+            sets, node_part, degree_sums = [], dict(), []  # type: tuple[list[set[T]], dict[T,int], list[int]]
         else:
             # Otherwise, split `data` into the respective representations we need to create the partition:
             # Sets becomes the list of (singleton) communities, part_tuples the list of (node, index) tuples and degree_sums a
             # list of node degrees.
-            sets, part_tuples, degree_sums = map(list, zip(*data))
+            # Ignore the assignment typecheck, which is currently broken (see https://stackoverflow.com/a/74380452/11080677).
+            sets, part_tuples, degree_sums = map(list, zip(*data))  # type: ignore[assignment]
             # From the list of tuples, create the dictionary we need
             node_part = dict(part_tuples)
 
         return cls(G, sets, node_part, degree_sums, weight)
 
     @staticmethod
-    def is_partition(G: Graph, 𝓟: Collection[Collection[T]]) -> bool:
+    def is_partition(G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]) -> bool:
         """Determine whether 𝓟 is indeed a partition of G."""
         # There used to be a custom implementation here, which turned out to be similar to Networkx' implementation.
         # Since I expect Networkx' implementation to be as optimized as possible and since this is only used as a
         # sanity check in the constructor, I decided to let the experts handle this.
+        if isinstance(𝓟, Partition) and 𝓟.G == G:
+            return True
+
         result: bool = community_utils.is_partition(G, 𝓟)
         return result
 
     @staticmethod
-    def __collect_nodes(G: Graph, nodes: Collection[int | T]) -> list[T]:
+    def __collect_nodes(G: Graph, nodes: Collection[T]) -> list[T]:
         """Collect the nodes in the underlying graph that correspond to the given `nodes` in the aggregate graph `G`."""
         if DataKeys.PARENT_PARTITION not in G.graph or DataKeys.PARENT_GRAPH not in G.graph:
-            # If none exists (i.e. we have the original graph) return G and the node we have found
+            # If none exists (i.e. we have the original graph) return the nodes we have found
             return list(nodes)
         else:
             # Otherwise, get the parent graph
@@ -164,7 +165,7 @@ class Partition(Generic[T]):
     # (especially for collections; see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
     # However, ths is not a problem for move_node, as we don't add new entries to the partition and don't rely on any functionality of the
     # type T, which is only used as a type marker here.
-    def move_node(self, v: T, target: set[T] | frozenset[T]) -> Partition[T]:  # type: ignore
+    def move_node(self, v: T, target: Set[T]) -> Partition[T]:  # type: ignore
         """Move node v from its current community in this partition to the given target community."""
         # Determine the index of the community that v was in initially
         source_partition_idx = self._node_part[v]
@@ -277,7 +278,7 @@ class Partition(Generic[T]):
         return tuple(self._sets)
 
 
-def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
+def freeze(set_list: Iterable[Set[T]]) -> set[frozenset[T]]:
     """
     Given a list of set, return a set of (frozen) sets representing those sets.
 
@@ -286,17 +287,16 @@ def freeze(set_list: Iterable[set[T] | frozenset[T]]) -> set[frozenset[T]]:
     """
     return set(map(lambda c: frozenset(c), set_list))
 
-
-def node_total(G: Graph, S: T | Collection[T]) -> int:
+def node_total(G: Graph, N: NodeData[S]) -> int:
     """
-    Return the recursive size of the set S of nodes in an (aggregate) graph.
+    Return the total node weight of a single node N or a collection thereof in an (aggregate) graph.
 
     Note that the graph has to have been preprocessed / created by one of the functions above for this to return correct results.
     """
-    if not isinstance(S, Iterable):
-        return G.nodes.data(DataKeys.WEIGHT, default=1)[S]
+    if not isinstance(N, Iterable):
+        return cast(int, G.nodes.data(DataKeys.WEIGHT, default=1)[N])
     else:
-        return sum(node_total(G, v) for v in S)
+        return sum(node_total(G, v) for v in N)
 
 
 def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tuple[T, float, int]:
@@ -327,7 +327,7 @@ def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tup
     return opt, val, idx
 
 
-def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weight: str = None) -> float:
+def single_node_neighbor_cut_size(G: Graph, v: S, D: Set[S], weight: str | None = None) -> float:
     """
     Calculate the size of an (C,D)-cut, where C is a single node.
 
@@ -338,10 +338,10 @@ def single_node_neighbor_cut_size(G: Graph, v: T, D: set[T] | frozenset[T], weig
     relevant_neighbors = (w for w in G[v] if w in D)
 
     # Now, for all such neighbors, sum up the weights of the edges (v,w).
-    return sum(G[v][w][weight] for w in relevant_neighbors)
+    return sum(cast(float, G[v][w][weight]) for w in relevant_neighbors)
 
 
-def preprocess_graph(G: Graph, weight: str) -> Graph:
+def preprocess_graph(G: Graph, weight: str | None) -> Graph:
     """Preprocesses a graph, adding weights of 1 to all edges which carry no weight data yet."""
     for u, v, d in G.edges.data(weight, default=1):
         G.edges[u, v][DataKeys.WEIGHT] = d

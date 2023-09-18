@@ -136,10 +136,10 @@ def test_partition_flatten() -> None:
     𝓢 = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
 
     J = 𝓢.aggregate_graph()
-    𝓣 = Partition.singleton_partition(J)
+    𝓣: Partition[int] = Partition.singleton_partition(J)
 
     𝓕 = 𝓣.flatten()
-    assert freeze(𝓕.communities) == freeze([[0, 1, 2, 3, 4], [5, 6], [7, 8, 9]])
+    assert freeze(𝓕.communities) == freeze([{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9}])
 
 
 def test_argmax() -> None:

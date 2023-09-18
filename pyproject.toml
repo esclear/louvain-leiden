@@ -47,6 +47,8 @@ max-args = 6
 
 [tool.mypy]
 strict = true
+# exclude the folder 'local', which is not checked into the version management system
+exclude = [ "local" ]
 
 # There is no proper typing stub of the networkx library
 [[tool.mypy.overrides]]

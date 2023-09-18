@@ -20,7 +20,7 @@ def partition_randomly(xs: list[int]) -> list[list[int]]:
     return out
 
 
-def seed_rng(seed: object) -> Callable[Callable[P, T], Callable[P, T]]:
+def seed_rng(seed: int) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """Use a function (a test case, for example) with this decorator to seed the random number generator with the given seed."""
     def seeding_decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
@@ -31,7 +31,7 @@ def seed_rng(seed: object) -> Callable[Callable[P, T], Callable[P, T]]:
     return seeding_decorator
 
 
-def search_seed(start: int = 0, stop: int = 2000) -> Callable[Callable[P, T], Callable[P, T]]:
+def search_seed(start: int = 0, stop: int = 2000) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """Search a seed for the RNG so that a given test passes."""
     def seeding_decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
