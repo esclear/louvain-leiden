@@ -142,7 +142,7 @@ class Partition(Generic[T]):
         cpy._weight = self._weight
         return cpy
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Check whether two partitions are equal."""
         if isinstance(other, Partition):
             return self._sets == other._sets and self._weight == other._weight
