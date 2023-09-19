@@ -29,18 +29,18 @@ def leiden(
     Parameters
     ----------
     G : Graph
-        The graph / network to process
+        The graph / network to process.
     𝓗 : QualityMetric[T]
-        A quality metric to optimize
+        A quality metric to optimize.
     𝓟 : Partition[T], optional
-        A partition to refine, leave at the default of `None` when not refining an existing partition.
+        A partition to use as basis, leave at the default of `None` when none is available.
     θ : float, optional
         The θ parameter of the Leiden method, which determines the randomness in the refinement phase of the Leiden
-        algorithm, default value of 0.3
+        algorithm, default value of 0.3.
     γ : float, optional
-        The γ parameter of the Leiden method, default value of 0.05
+        The γ parameter of the Leiden method, default value of 0.05.
 
-    :returns: A partition of G into communities
+    :returns: A partition of G into communities.
     """
     # For every edge, assign an edge weight attribute of 1, if no weight is set yet.
     G = preprocess_graph(G, weight)

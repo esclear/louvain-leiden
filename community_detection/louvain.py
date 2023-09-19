@@ -18,7 +18,20 @@ T = TypeVar("T")
 
 
 def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, weight: None | str = None) -> Partition[T]:
-    """Perform the Louvain algorithm for community detection."""
+    """
+    Perform the Louvain algorithm for community detection.
+
+    Parameters
+    ----------
+    G : Graph
+        The graph / network to process.
+    𝓗 : QualityMetric[T]
+        A quality metric to optimize.
+    𝓟 : Partition[T], optional
+        A partition to use as basis, leave at the default of `None` when none is available.
+
+    :returns: A partition of G into communities.
+    """
     # For every edge, assign an edge weight attribute of 1, if no weight is set yet.
     G = preprocess_graph(G, weight)
 
