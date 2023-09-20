@@ -49,7 +49,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         def community_summand(C: Set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the total weight of edges within that community:
-            e_c: int = nx.induced_subgraph(𝓟.G, C).size(weight=𝓟._weight)  # TODO: Can this be cached
+            e_c: int = nx.induced_subgraph(𝓟.G, C).size(weight=𝓟._weight)
             # Also determine the total sum of node degrees in the community C
             deg_c: int = 𝓟.degree_sum(next(iter(C)))
 
@@ -78,8 +78,11 @@ class Modularity(QualityMetric[T], Generic[T]):
         degs_source: int = 𝓟.degree_sum(v)
         degs_target: int = 𝓟.degree_sum(next(iter(target))) if target else 0
 
-        # Now, calculate and return the difference of the metric that will be accrued by moving the node v into the community t:
-        return (diff_target - diff_source + self.γ / (2 * m) * (deg_v * (degs_source - degs_target) - deg_v**2)) / m
+        # Now, calculate and return the difference of the metric that will be accrued by moving the node v into the community t.
+        # For the derivation see the appendix of the accompanying project documentation, here it is slightly rearranged.
+        # Note that we divide by m instead of 2*m here, as we want the delta function compatible to the calculation in __call__,
+        # which in turn is implemented to be compatible with NetworkX, as described above.
+        return ((diff_target - diff_source) - self.γ / (2 * m) * (deg_v**2 + deg_v * (degs_target - degs_source))) / m
 
 
 class CPM(QualityMetric[T], Generic[T]):
@@ -124,5 +127,4 @@ class CPM(QualityMetric[T], Generic[T]):
         target_weight: float = sum(node_weights[u] for u in target)
 
         # Now, calculate and return the difference of the metric that will be accrued by moving the node v into the community t:
-        return diff_target - diff_source + self.γ * ( comb(source_weight, 2) + comb(target_weight, 2)
-            - comb(source_weight - v_weight, 2) - comb(target_weight + v_weight, 2))  # fmt: skip
+        return diff_target - diff_source - self.γ * v_weight * (v_weight + target_weight - source_weight)
