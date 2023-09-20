@@ -138,6 +138,11 @@ def test_louvain_weighted_barbell_modularity() -> None:
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
 
+    # Also, rerun the algorithm to see whether the result changed (it shouldn't)
+    𝓠 = louvain(G, 𝓗, 𝓠, weight="weight")
+
+    assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
+
 
 # This test proves that the Leiden algorithm *can arrive* at the WEIGHTED_BARBELL_GOOD partition, which cannot be reached by the
 # greedy Louvain algorithm (cf. the Louvain and Leiden paper).
@@ -153,6 +158,11 @@ def test_leiden_weighted_barbell_modularity() -> None:
 
     𝓗: QualityMetric[int] = Modularity(0.75)
     𝓠 = leiden(G, 𝓗, weight="weight")
+
+    assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
+
+    # Also, rerun the algorithm to see whether the result changed (it shouldn't)
+    𝓠 = leiden(G, 𝓗, 𝓠, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
 

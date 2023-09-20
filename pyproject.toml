@@ -14,6 +14,7 @@ skip-string-normalization = true
 
 
 [tool.coverage.run]
+branch = true
 omit = [
     # Omit tests
     "tests/*",
@@ -25,7 +26,6 @@ omit = [
 
 [tool.coverage.report]
 exclude_also = [
-    "raise NotImplementedError",
     "@(abc\\.)?abstractmethod",
 ]
 

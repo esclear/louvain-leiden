@@ -38,12 +38,12 @@ def test_louvain_modularity_comparison_networkx_karate_club() -> None:
 
     # The following function uses NetworkX' implementation of modularity and makes it available so that we can use it
     # as a reference implementation to compare the values calculated by our implementation against.
-    def nxMod(𝓡: Partition[int]) -> float:
+    def nx_mod(𝓡: Partition[int]) -> float:
         mod: float = nx.community.modularity(G, 𝓡.as_set(), weight="weight", resolution=1)
         return mod
 
     # Save modularities calculated by our and NX' modularity functions of partitions calculated by us and NetworkX.
-    olom, olnm, nlom, nlnm = 𝓗(𝓟), nxMod(𝓟), 𝓗(𝓠), nxMod(𝓠)
+    olom, olnm, nlom, nlnm = 𝓗(𝓟), nx_mod(𝓟), 𝓗(𝓠), nx_mod(𝓠)
 
     print("Final modularities   | our Louvain impl. | NX' Louvain impl.")
     print(f"Our modularity impl. |      {olom:03.10f} |      {nlom:03.10f} ")
@@ -87,12 +87,12 @@ def test_louvain_modularity_comparison_networkx_jazz_musicians() -> None:
 
     # The following function uses NetworkX' implementation of modularity and makes it available so that we can use it
     # as a reference implementation to compare the values calculated by our implementation against.
-    def nxMod(𝓡: Partition[int]) -> float:
+    def nx_mod(𝓡: Partition[int]) -> float:
         mod: float = nx.community.modularity(G, 𝓡.as_set(), weight="weight", resolution=1)
         return mod
 
     # Save modularities calculated by our and NX' modularity functions of partitions calculated by us and NetworkX.
-    olom, olnm, nlom, nlnm = 𝓗(𝓟), nxMod(𝓟), 𝓗(𝓠), nxMod(𝓠)
+    olom, olnm, nlom, nlnm = 𝓗(𝓟), nx_mod(𝓟), 𝓗(𝓠), nx_mod(𝓠)
 
     print("Final modularities   | our Louvain impl. | NX' Louvain impl.")
     print(f"Our modularity impl. |      {olom:03.10f} |      {nlom:03.10f} ")

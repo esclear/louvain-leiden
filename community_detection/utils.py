@@ -154,10 +154,6 @@ class Partition(Generic[T]):
         """Make a Partition object iterable, returning an iterator over the communities."""
         return self._sets.__iter__()
 
-    def __contains__(self, nodes: object) -> bool:
-        """Return whether a given set of nodes is part of the partition or not."""
-        return nodes in self._sets
-
     def __len__(self) -> int:
         """Get the size (number of communities) of the partition."""
         return len(self._sets)

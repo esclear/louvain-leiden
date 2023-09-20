@@ -22,6 +22,7 @@ class QualityMetric(ABC, Generic[T]):
         """Measure the quality of the given partition as applied to the graph provided."""
         raise NotImplementedError()
 
+    @abstractmethod
     def delta(self, 𝓟: Partition[T], v: T, target: Set[T]) -> float:
         """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
         moved = copy(𝓟).move_node(v, target)
