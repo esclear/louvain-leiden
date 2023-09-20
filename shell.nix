@@ -11,7 +11,7 @@ mypython = pkgs.python3.withPackages (ps: with ps; [
     # Demonstration notebooks
     jupyter_core notebook # Basic Jupyter notebook support
     pandas # For loading data
-    matplotlib pygraphviz # For visualization
+    matplotlib # For visualization
     # Performance improvement
     line_profiler
   ]);
