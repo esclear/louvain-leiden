@@ -15,6 +15,7 @@ T = TypeVar("T", covariant=True)
 
 NodeData = Union[S, 'Collection[NodeData[S]]']
 
+
 class DataKeys:
     """
     Keys to use in the graph for node and edge weight data.
@@ -32,7 +33,7 @@ class Partition(Generic[T]):
     """This class represents a partition of a graph's nodes."""
 
     def __init__(
-            self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT
+        self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT
     ) -> None:
         """
         Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
@@ -286,6 +287,7 @@ def freeze(set_list: Iterable[Set[T]]) -> set[frozenset[T]]:
     in python and thus cannot be contained in a set.
     """
     return set(map(lambda c: frozenset(c), set_list))
+
 
 def node_total(G: Graph, N: NodeData[S]) -> int:
     """

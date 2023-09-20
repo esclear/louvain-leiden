@@ -48,9 +48,9 @@ class Modularity(QualityMetric[T], Generic[T]):
         def community_summand(C: Set[T]) -> float:
             # Calculate the summand representing the community `c`.
             # First, determine the total weight of edges within that community:
-            e_c:int = nx.induced_subgraph(𝓟.G, C).size(weight=𝓟._weight)  # TODO: Can this be cached
+            e_c: int = nx.induced_subgraph(𝓟.G, C).size(weight=𝓟._weight)  # TODO: Can this be cached
             # Also determine the total sum of node degrees in the community C
-            deg_c:int = 𝓟.degree_sum(next(iter(C)))
+            deg_c: int = 𝓟.degree_sum(next(iter(C)))
 
             # From this, calculate the contribution of community c:
             # The "From Louvain to Leiden" paper doesn't state this, but for the modularity to match the original, cited definition, e_c

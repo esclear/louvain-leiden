@@ -37,6 +37,7 @@ BARBELL_COMS_NO_MID = freeze([{0, 1, 2, 3, 4, 5}, {6, 7, 8, 9, 10, 11}])
 # communities. Due to the greedy nature of the louvain algorithm, we will never reach BARBELL_GOOD, but nodes 5 and 6
 # will often belong to one of the communities belonging to one or both of the complete graphs.
 
+
 @seed_rng(0)
 def test_louvain_barbell_modularity() -> None:
     """
@@ -106,6 +107,7 @@ def test_leiden_barbell_cpm() -> None:
 # It admits a partition (called WEIGHTED_BARBELL_GOOD), which cannot be found by the Louvain algorithm, due to its greedy nature.
 # The `test_leiden_*` tests below show that the Leiden algorithm can indeed reach that partition.
 
+
 def _get_weighted_barbell_graph() -> nx.Graph:
     """Return the weighted (4,0) barbell graph found on p. 6 of the supplementary material of the "From Louvain to Leiden" paper."""
     G = nx.Graph()
@@ -113,12 +115,12 @@ def _get_weighted_barbell_graph() -> nx.Graph:
         (0, 1, 3),
         (0, 2, 1.5), (0, 3, 1.5), (0, 4, 1.5), (2, 3, 3), (2, 4, 3), (3, 4, 3),
         (1, 5, 1.5), (1, 6, 1.5), (1, 7, 1.5), (5, 6, 3), (5, 7, 3), (6, 7, 3)
-    ])
+    ])  # fmt: skip
     return G
 
 
 # This graph can be partitioned into the following partitions (amongst others):
-WEIGHTED_BARBELL_GOOD = freeze([{0, 2, 3, 4},{1, 5, 6, 7}])
+WEIGHTED_BARBELL_GOOD = freeze([{0, 2, 3, 4}, {1, 5, 6, 7}])
 WEIGHTED_BARBELL_BAD = freeze([{2, 3, 4}, {0, 1}, {5, 6, 7}])
 
 

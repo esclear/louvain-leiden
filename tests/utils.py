@@ -14,7 +14,7 @@ def partition_randomly(xs: list[int]) -> list[list[int]]:
     i = 0
     while i < len(xs):
         size = random.randint(1, len(xs) - i)
-        out.append(xs[i:i+size])
+        out.append(xs[i : i + size])
         i += size
 
     return out
@@ -22,17 +22,21 @@ def partition_randomly(xs: list[int]) -> list[list[int]]:
 
 def seed_rng(seed: int) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """Use a function (a test case, for example) with this decorator to seed the random number generator with the given seed."""
+
     def seeding_decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
             random.seed(seed)
             return func(*args, **kwargs)
+
         return wrapped_function
+
     return seeding_decorator
 
 
 def search_seed(start: int = 0, stop: int = 2000) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """Search a seed for the RNG so that a given test passes."""
+
     def seeding_decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
         def wrapped_function(*args: P.args, **kwargs: P.kwargs) -> T:
@@ -45,6 +49,7 @@ def search_seed(start: int = 0, stop: int = 2000) -> Callable[[Callable[P, T]], 
                 except AssertionError:
                     continue
             raise AssertionError(f"No valid seed found in range {start}..{stop} for function `{func.__name__}`!")
+
         return wrapped_function
 
     return seeding_decorator
