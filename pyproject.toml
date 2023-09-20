@@ -7,6 +7,7 @@ license = {text = "European Union Public License 1.2"}
 requires-python = ">=3.9"
 authors = [ {name = "Daniel Albert", email = "git+community-detection+252b9@esclear.de"} ]
 
+
 [tool.black]
 line-length = 140
 target-version = ["py39", "py310"]
@@ -32,11 +33,15 @@ exclude_also = [
 
 [tool.ruff]
 line-length = 140
-select = [ "E", "F", "D", "UP", "W", "I", "ANN", "RUF", "PL" ]
-ignore = ["RUF001", "RUF002", "RUF003", "ANN101", "ANN102"]
+select = [ "E", "F", "D", "UP", "W", "N", "I", "ANN", "RUF", "PL" ]
+ignore = [
+    "RUF001", "RUF002", "RUF003",  # Ignore warnings about ambiguous unicode characters (𝓗, 𝓟, …)
+    "ANN101", "ANN102",  # Ignore missing type of `self` and `cls` args, which mypy infers (see docs for ANN101, ANN102)
+    "N803", "N806",  # Ignore warnings about uppercase, single-letter variable names (G, H, …)
+]
 
 [tool.ruff.per-file-ignores]
-# For the tests, ignore
+# For the tests, allow longer lines, missing docstrings for modules and "magic values" in comparisons to keep tests simple
 "tests/*" = ["D100", "D103", "D104", "E501", "PLR2004"]
 
 [tool.ruff.pydocstyle]
@@ -44,6 +49,7 @@ convention = "pep257"
 
 [tool.ruff.pylint]
 max-args = 6
+
 
 [tool.mypy]
 strict = true

@@ -1,25 +1,19 @@
 let pkgs = import <nixpkgs> {};
 mypython = pkgs.python3.withPackages (ps: with ps; [
     # For the library
-    networkx scipy
-    # Development (code formatting)
-    black flake8
+    networkx
     # Testing
     pytest pytest-cov
-    # Package management
-    virtualenv pip
     # Demonstration notebooks
     jupyter_core notebook # Basic Jupyter notebook support
     pandas # For loading data
     matplotlib # For visualization
-    # Performance improvement
-    line_profiler
   ]);
 in pkgs.mkShell {
   buildInputs = [
     mypython
-    pkgs.ruff pkgs.isort pkgs.mypy
-    pkgs.memray
+    # For static code analysis and formatting
+    pkgs.ruff pkgs.mypy pkgs.black
   ];
   shellHook = ''
         alias pip="PIP_PREFIX='$(pwd)/_build/pip_packages' \pip"
