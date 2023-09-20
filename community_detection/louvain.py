@@ -10,14 +10,14 @@ from typing import TypeVar
 
 from networkx import Graph
 
-from .quality_metrics import QualityMetric
+from .quality_functions import QualityFunction
 from .utils import DataKeys as Keys
 from .utils import Partition, argmax, preprocess_graph
 
 T = TypeVar("T")
 
 
-def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, weight: None | str = None) -> Partition[T]:
+def louvain(G: Graph, 𝓗: QualityFunction[T], 𝓟: Partition[T] | None = None, weight: None | str = None) -> Partition[T]:
     """
     Perform the Louvain algorithm for community detection.
 
@@ -25,8 +25,8 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, 
     ----------
     G : Graph
         The graph / network to process.
-    𝓗 : QualityMetric[T]
-        A quality metric to optimize.
+    𝓗 : QualityFunction[T]
+        A quality function to optimize.
     𝓟 : Partition[T], optional
         A partition to use as basis, leave at the default of `None` when none is available.
 
@@ -56,8 +56,8 @@ def louvain(G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, 
         𝓟 = Partition.singleton_partition(G, Keys.WEIGHT)
 
 
-def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
-    """Perform node moves to communities as long as the quality metric can be improved by moving."""
+def move_nodes(G: Graph, 𝓟: Partition[T], 𝓗: QualityFunction[T]) -> Partition[T]:
+    """Perform node moves to communities as long as the quality function can be improved by moving."""
     # This is the python form of a "do-while" loop
     while True:
         Q = list(G.nodes)

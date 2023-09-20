@@ -13,7 +13,7 @@ from typing import TypeVar
 import networkx as nx
 from networkx import Graph
 
-from .quality_metrics import QualityMetric
+from .quality_functions import QualityFunction
 from .utils import DataKeys as Keys
 from .utils import Partition, argmax, freeze, node_total, preprocess_graph
 
@@ -21,7 +21,7 @@ T = TypeVar("T")
 
 
 def leiden(
-    G: Graph, 𝓗: QualityMetric[T], 𝓟: Partition[T] | None = None, θ: float = 0.3, γ: float = 0.05, weight: str | None = None
+    G: Graph, 𝓗: QualityFunction[T], 𝓟: Partition[T] | None = None, θ: float = 0.3, γ: float = 0.05, weight: str | None = None
 ) -> Partition[T]:
     """
     Perform the Leiden algorithm for community detection.
@@ -30,8 +30,8 @@ def leiden(
     ----------
     G : Graph
         The graph / network to process.
-    𝓗 : QualityMetric[T]
-        A quality metric to optimize.
+    𝓗 : QualityFunction[T]
+        A quality function to optimize.
     𝓟 : Partition[T], optional
         A partition to use as basis, leave at the default of `None` when none is available.
     θ : float, optional
@@ -80,7 +80,7 @@ def leiden(
         𝓟 = Partition.from_partition(G, [{v for v in G.nodes if G.nodes[v][Keys.NODES] <= C} for C in 𝓟], Keys.WEIGHT)
 
 
-def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Partition[T]:
+def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityFunction[T]) -> Partition[T]:
     """
     Perform fast local node moves to communities to improve the partition's quality.
 
@@ -114,7 +114,7 @@ def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T]) -> Par
             return 𝓟
 
 
-def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float) -> Partition[T]:
+def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityFunction[T], θ: float, γ: float) -> Partition[T]:
     """Refine all communities by merging repeatedly, starting from a singleton partition."""
     # Assign each node to its own community
     𝓟ᵣ: Partition[T] = Partition.singleton_partition(G, Keys.WEIGHT)
@@ -127,7 +127,7 @@ def refine_partition(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: f
     return 𝓟ᵣ
 
 
-def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityMetric[T], θ: float, γ: float, S: Set[T]) -> Partition[T]:
+def merge_nodes_subset(G: Graph, 𝓟: Partition[T], 𝓗: QualityFunction[T], θ: float, γ: float, S: Set[T]) -> Partition[T]:
     """Merge the nodes in the subset S into one or more sets to refine the partition 𝓟."""
     size_s = node_total(G, S)
 

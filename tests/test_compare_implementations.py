@@ -3,7 +3,7 @@ import random
 import networkx as nx
 
 from community_detection.louvain import louvain
-from community_detection.quality_metrics import Modularity, QualityMetric
+from community_detection.quality_functions import Modularity, QualityFunction
 from community_detection.utils import Partition
 
 PRECISION = 1e-15
@@ -26,7 +26,7 @@ def test_louvain_modularity_comparison_networkx_karate_club() -> None:
     random.seed(OUR_SEED)
 
     # We use modularity as quality function, with a resolution of 1.
-    𝓗: QualityMetric[int] = Modularity(1)
+    𝓗: QualityFunction[int] = Modularity(1)
     𝓟 = louvain(G, 𝓗, weight="weight")
     print(f"Our partition:       {𝓟.as_set()=}")
 
@@ -75,7 +75,7 @@ def test_louvain_modularity_comparison_networkx_jazz_musicians() -> None:
     random.seed(OUR_SEED)
 
     # We use modularity as quality function, with a resolution of 1.
-    𝓗: QualityMetric[int] = Modularity(1)
+    𝓗: QualityFunction[int] = Modularity(1)
     𝓟 = louvain(G, 𝓗, weight="weight")
     print(f"Our partition:       {𝓟.as_set()=}")
 

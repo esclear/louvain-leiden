@@ -57,7 +57,7 @@ For demonstration purposes of this library, the following notebooks are included
 ## Tests and Static Analysis
 
 ### Running the tests
-This project has unit tests for almost all individual [utility functions](community_detection/utils.py) and the [quality metrics](community_detection/quality_metrics.py).
+This project has unit tests for almost all individual [utility functions](community_detection/utils.py) and the [quality functions](community_detection/quality_functions.py).
 In addition to that, there are tests which execute the community detection algorithms on known graphs and check the results.
 
 The tests are located in the [`tests`](tests/) directory and can be executed running the `pytest` tool as follows from a shell in the repository root, generating [branch coverage](https://en.wikipedia.org/wiki/Code_coverage#Basic_coverage_criteria) information in the process:

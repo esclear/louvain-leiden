@@ -2,7 +2,7 @@ from math import isnan
 
 import networkx as nx
 
-from community_detection.quality_metrics import CPM, Modularity, QualityMetric
+from community_detection.quality_functions import CPM, Modularity, QualityFunction
 from community_detection.utils import Partition, freeze
 
 from .utils import partition_randomly
@@ -18,7 +18,7 @@ def test_modularity_trivial_values() -> None:
     𝓟 = Partition.from_partition(C, [{i for i in range(10)}])
     𝓠 = Partition.from_partition(C, [{i} for i in range(10)])
 
-    𝓗: QualityMetric[int] = Modularity(1)
+    𝓗: QualityFunction[int] = Modularity(1)
 
     assert 0.0 == 𝓗(𝓟)
     assert abs(-0.1 - 𝓗(𝓠)) < PRECISION
@@ -42,7 +42,7 @@ def test_modularity_example() -> None:
         (7, 8), (8, 9), (9, 7)
     ])
 
-    𝓗: QualityMetric[int] = Modularity(1)
+    𝓗: QualityFunction[int] = Modularity(1)
 
     # Start with the (original) singleton partition
     𝓟 = Partition.from_partition(G, [{0, 1, 2, 3}, {4, 5, 6}, {7, 8, 9}])
@@ -57,7 +57,7 @@ def test_modularity_random() -> None:
     G = nx.karate_club_graph()
     nodes = list(G.nodes)
 
-    𝓗: QualityMetric[int] = Modularity(1)
+    𝓗: QualityFunction[int] = Modularity(1)
 
     for _ in range(10):
         # Start with the (original) singleton partition
@@ -79,7 +79,7 @@ def test_modularity_delta() -> None:
         (1, 5, 1.5), (1, 6, 1.5), (1, 7, 1.5), (5, 6, 3), (5, 7, 3), (6, 7, 3)
     ])
 
-    𝓗: QualityMetric[int] = Modularity(0.95)
+    𝓗: QualityFunction[int] = Modularity(0.95)
 
     # Start with the (original) singleton partition
     𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}], weight="weight")
@@ -116,7 +116,7 @@ def test_cpm_trivial_values() -> None:
     𝓠_C = Partition.from_partition(C, [{i} for i in range(10)])
     𝓠_E = Partition.from_partition(E, [{i} for i in range(10)])
 
-    𝓗: QualityMetric[int] = CPM(0.25)
+    𝓗: QualityFunction[int] = CPM(0.25)
 
     # Values calculated manually for γ = 0.25:
     assert -11.25 == 𝓗(𝓟_E)  # The empty graph (no edges) with the trivial partition has CPM -11.25
@@ -141,7 +141,7 @@ def test_cpm_example_from_material() -> None:
     𝓞_w = Partition.from_partition(B, [{0, 2, 3, 4}, {1, 5, 6, 7}], "weight")
     𝓝_w = Partition.from_partition(B, [{2, 3, 4}, {0, 1}, {5, 6, 7}], "weight")
 
-    𝓗: QualityMetric[int] = CPM(1.0)
+    𝓗: QualityFunction[int] = CPM(1.0)
 
     # Values calculated manually for and the (4,0)-barbell graph:
     # Unweighted (does not correspond to supplementary information)
@@ -162,7 +162,7 @@ def test_cpm_delta() -> None:
         (1, 5, 1.5), (1, 6, 1.5), (1, 7, 1.5), (5, 6, 3), (5, 7, 3), (6, 7, 3)
     ])
 
-    𝓗: QualityMetric[int] = CPM(0.95)
+    𝓗: QualityFunction[int] = CPM(0.95)
 
     # Start with the (original) singleton partition
     𝓟 = Partition.from_partition(B, [{0, 1, 6}, {2, 3, 4}, {5, 7}], "weight")

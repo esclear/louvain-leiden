@@ -1,4 +1,4 @@
-"""This module defines quality metrics and provides implementations of Modularity and the ConstantPotts Model."""
+"""This module defines quality functions and provides implementations of Modularity and the ConstantPotts Model."""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -14,7 +14,7 @@ from .utils import Partition, single_node_neighbor_cut_size
 T = TypeVar("T")
 
 
-class QualityMetric(ABC, Generic[T]):
+class QualityFunction(ABC, Generic[T]):
     """A metric that, when called, measures the quality of a partition into communities."""
 
     @abstractmethod
@@ -24,20 +24,20 @@ class QualityMetric(ABC, Generic[T]):
 
     @abstractmethod
     def delta(self, 𝓟: Partition[T], v: T, target: Set[T]) -> float:
-        """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        """Measure the increase (or decrease, if negative) of this quality function when moving node v into the target community."""
         moved = copy(𝓟).move_node(v, target)
         return self(moved) - self(𝓟)
 
 
-class Modularity(QualityMetric[T], Generic[T]):
+class Modularity(QualityFunction[T], Generic[T]):
     """Implementation of Modularity as a quality function."""
 
     def __init__(self, γ: float = 0.25) -> None:
-        """Create a new instance of Modularity quality metric with the given resolution parameter γ."""
+        """Create a new instance of Modularity quality function with the given resolution parameter γ."""
         self.γ: float = γ
 
     def __call__(self, 𝓟: Partition[T]) -> float:
-        """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality metric."""
+        """Measure the quality of the given partition 𝓟 of the graph G, as defined by the Modularity quality function."""
         m = 𝓟.graph_size
 
         # For empty graphs (without edges) return NaN, as Modularity is not defined then, due to the division by `2*m`.)
@@ -62,7 +62,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         return sum(map(community_summand, 𝓟)) / float(2 * m)
 
     def delta(self, 𝓟: Partition[T], v: T, target: Set[T]) -> float:
-        """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        """Measure the increase (or decrease, if negative) of this quality function when moving node v into the target community."""
         if v in target:
             return 0.0
 
@@ -85,7 +85,7 @@ class Modularity(QualityMetric[T], Generic[T]):
         return ((diff_target - diff_source) - self.γ / (2 * m) * (deg_v**2 + deg_v * (degs_target - degs_source))) / m
 
 
-class CPM(QualityMetric[T], Generic[T]):
+class CPM(QualityFunction[T], Generic[T]):
     """Implementation of the Constant Potts Model (CPM) as a quality function."""
 
     def __init__(self, γ: float = 0.25) -> None:
@@ -93,7 +93,7 @@ class CPM(QualityMetric[T], Generic[T]):
         self.γ: float = γ
 
     def __call__(self, 𝓟: Partition[T]) -> float:
-        """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality metric."""
+        """Measure the quality of the given partition 𝓟 of the graph G, as defined by the CPM quality function."""
 
         def community_summand(C: Set[T]) -> float:
             # Calculate the summand representing the community `c`.
@@ -111,7 +111,7 @@ class CPM(QualityMetric[T], Generic[T]):
         return sum(map(community_summand, 𝓟))
 
     def delta(self, 𝓟: Partition[T], v: T, target: Set[T]) -> float:
-        """Measure the increase (or decrease, if negative) of this quality metric when moving node v into the target community."""
+        """Measure the increase (or decrease, if negative) of this quality function when moving node v into the target community."""
         if v in target:
             return 0.0
 

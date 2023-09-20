@@ -15,7 +15,7 @@ import networkx as nx
 
 from community_detection.leiden import leiden
 from community_detection.louvain import louvain
-from community_detection.quality_metrics import CPM, Modularity, QualityMetric
+from community_detection.quality_functions import CPM, Modularity, QualityFunction
 from community_detection.utils import freeze
 
 from .utils import seed_rng
@@ -47,7 +47,7 @@ def test_louvain_barbell_modularity() -> None:
     """
     G = nx.generators.barbell_graph(5, 2)
 
-    𝓗: QualityMetric[int] = Modularity(1)
+    𝓗: QualityFunction[int] = Modularity(1)
     𝓠 = louvain(G, 𝓗)
 
     assert 𝓠.as_set() == BARBELL_COMS_AND_MID
@@ -62,7 +62,7 @@ def test_leiden_barbell_modularity() -> None:
     """
     G = nx.generators.barbell_graph(5, 2)
 
-    𝓗: QualityMetric[int] = Modularity(1.1)
+    𝓗: QualityFunction[int] = Modularity(1.1)
     𝓠 = leiden(G, 𝓗)
 
     assert 𝓠.as_set() == BARBELL_COMS_AND_MID
@@ -78,7 +78,7 @@ def test_louvain_barbell_cpm() -> None:
     G = nx.generators.barbell_graph(5, 2)
 
     # The following resolution parameter for the CPM was found using binary search on the interval [0.95, 1.05].
-    𝓗: QualityMetric[int] = CPM(0.9999999999999986)
+    𝓗: QualityFunction[int] = CPM(0.9999999999999986)
     𝓠 = louvain(G, 𝓗)
 
     assert 𝓠.as_set() == BARBELL_COMS_AND_MID
@@ -93,7 +93,7 @@ def test_leiden_barbell_cpm() -> None:
     """
     G = nx.generators.barbell_graph(5, 2)
 
-    𝓗: QualityMetric[int] = CPM(0.8)
+    𝓗: QualityFunction[int] = CPM(0.8)
     𝓠 = leiden(G, 𝓗, γ=0.8, θ=0.25)
 
     assert 𝓠.as_set() == BARBELL_COMS_AND_MID
@@ -133,7 +133,7 @@ def test_louvain_weighted_barbell_modularity() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityMetric[int] = Modularity(1)
+    𝓗: QualityFunction[int] = Modularity(1)
     𝓠 = louvain(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
@@ -156,7 +156,7 @@ def test_leiden_weighted_barbell_modularity() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityMetric[int] = Modularity(0.75)
+    𝓗: QualityFunction[int] = Modularity(0.75)
     𝓠 = leiden(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
@@ -177,7 +177,7 @@ def test_louvain_weighted_barbell_cpm() -> None:
     G = _get_weighted_barbell_graph()
 
     # The following resolution parameter for the CPM was found using binary search on the interval [0.95, 1.05].
-    𝓗: QualityMetric[int] = CPM(0.9999999999999986)
+    𝓗: QualityFunction[int] = CPM(0.9999999999999986)
     𝓠 = louvain(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
@@ -193,7 +193,7 @@ def test_leiden_weighted_barbell_cpm() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityMetric[int] = CPM(0.5)
+    𝓗: QualityFunction[int] = CPM(0.5)
     𝓠 = leiden(G, 𝓗, weight="weight")
 
     assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
