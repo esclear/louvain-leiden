@@ -107,6 +107,7 @@ The notebooks in this repository use the following datasets:
 - The [Karate Club][data-karateclub] dataset (provided by the NetworkX library)
 - The [Cora][data-cora] dataset (contained in the [datasets](datasets) directory)
 - The [Jazz Musicians][data-jazz] dataset (also part of the [datasets](datasets) directory)
+- The [Arxiv GR-QC][data-grqc] dataset (also part of the [datasets](datasets) directory)
 
 [src-blondel]: https://doi.org/10.1088/1742-5468/2008/10/p10008 "Blondel, Guillaume, Lambiotte, Lefebvre: Fast unfolding of communities in large networks"
 [src-traag]: https://doi.org/10.1038/s41598-019-41695-z "Traag, Waltman, van Eck: From Louvain to Leiden: guaranteeing well-connected communities"
@@ -114,4 +115,5 @@ The notebooks in this repository use the following datasets:
 [data-jazz]: https://www.worldscientific.com/doi/abs/10.1142/S0219525903001067 "Gleiser, Danon: Community structure in jazz"
 [data-karateclub]: https://www.journals.uchicago.edu/doi/pdf/10.1086/jar.33.4.3629752 "An Information Flow Model for Conflict and Fission in Small Groups"
 [data-cora]: https://www.openicpsr.org/openicpsr/project/100859/version/V1/view "McCallum: Cora Dataset"
+[data-grqc]: http://snap.stanford.edu/data/ca-GrQc.html "General Relativity and Quantum Cosmology collaboration network"
 [ruff]: https://ruff.rs/
