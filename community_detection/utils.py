@@ -222,11 +222,10 @@ class Partition(Generic[T]):
 
         # For every pair of communities, determine the total weight of edges between them.
         # This also includes edges between two nodes in the same community, which will form a loop in the aggregate graph.
-        for c_idx, d_idx in combinations_with_replacement(range(n_c), 2):
-            C, D = self._sets[c_idx], self._sets[d_idx]
-            weight = cut_size(self.G, C, D, weight=self._weight)
-            if weight > 0:
-                H.add_edge(c_idx, d_idx, **{DataKeys.WEIGHT: weight})
+        for u, v, weight in self.G.edges(data=self._weight, default=1):
+            u_com, v_com = self._node_part[u], self._node_part[v]
+            current = H.get_edge_data(u_com, v_com, {DataKeys.WEIGHT: 0})[DataKeys.WEIGHT]
+            H.add_edge(u_com, v_com, **{DataKeys.WEIGHT: current + weight})
 
         return H
 
