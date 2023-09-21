@@ -47,10 +47,10 @@ def test_louvain_barbell_modularity() -> None:
     """
     G = nx.generators.barbell_graph(5, 2)
 
-    𝓗: QualityFunction[int] = Modularity(1)
-    𝓠 = louvain(G, 𝓗)
+    H: QualityFunction[int] = Modularity(1)
+    Q = louvain(G, H)
 
-    assert 𝓠.as_set() == BARBELL_COMS_AND_MID
+    assert Q.as_set() == BARBELL_COMS_AND_MID
 
 
 @seed_rng(0)
@@ -62,10 +62,10 @@ def test_leiden_barbell_modularity() -> None:
     """
     G = nx.generators.barbell_graph(5, 2)
 
-    𝓗: QualityFunction[int] = Modularity(1.1)
-    𝓠 = leiden(G, 𝓗)
+    H: QualityFunction[int] = Modularity(1.1)
+    Q = leiden(G, H)
 
-    assert 𝓠.as_set() == BARBELL_COMS_AND_MID
+    assert Q.as_set() == BARBELL_COMS_AND_MID
 
 
 @seed_rng(0)
@@ -78,10 +78,10 @@ def test_louvain_barbell_cpm() -> None:
     G = nx.generators.barbell_graph(5, 2)
 
     # The following resolution parameter for the CPM was found using binary search on the interval [0.95, 1.05].
-    𝓗: QualityFunction[int] = CPM(0.9999999999999986)
-    𝓠 = louvain(G, 𝓗)
+    H: QualityFunction[int] = CPM(0.9999999999999986)
+    Q = louvain(G, H)
 
-    assert 𝓠.as_set() == BARBELL_COMS_AND_MID
+    assert Q.as_set() == BARBELL_COMS_AND_MID
 
 
 @seed_rng(0)
@@ -93,10 +93,10 @@ def test_leiden_barbell_cpm() -> None:
     """
     G = nx.generators.barbell_graph(5, 2)
 
-    𝓗: QualityFunction[int] = CPM(0.8)
-    𝓠 = leiden(G, 𝓗, γ=0.8, θ=0.25)
+    H: QualityFunction[int] = CPM(0.8)
+    Q = leiden(G, H, gamma=0.8, theta=0.25)
 
-    assert 𝓠.as_set() == BARBELL_COMS_AND_MID
+    assert Q.as_set() == BARBELL_COMS_AND_MID
 
 
 ################################
@@ -133,15 +133,15 @@ def test_louvain_weighted_barbell_modularity() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityFunction[int] = Modularity(1)
-    𝓠 = louvain(G, 𝓗, weight="weight")
+    H: QualityFunction[int] = Modularity(1)
+    Q = louvain(G, H, weight="weight")
 
-    assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
+    assert Q.as_set() == WEIGHTED_BARBELL_BAD
 
     # Also, rerun the algorithm to see whether the result changed (it shouldn't)
-    𝓠 = louvain(G, 𝓗, 𝓠, weight="weight")
+    Q = louvain(G, H, Q, weight="weight")
 
-    assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
+    assert Q.as_set() == WEIGHTED_BARBELL_BAD
 
 
 # This test proves that the Leiden algorithm *can arrive* at the WEIGHTED_BARBELL_GOOD partition, which cannot be reached by the
@@ -156,15 +156,15 @@ def test_leiden_weighted_barbell_modularity() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityFunction[int] = Modularity(0.75)
-    𝓠 = leiden(G, 𝓗, weight="weight")
+    H: QualityFunction[int] = Modularity(0.75)
+    Q = leiden(G, H, weight="weight")
 
-    assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
+    assert Q.as_set() == WEIGHTED_BARBELL_GOOD
 
     # Also, rerun the algorithm to see whether the result changed (it shouldn't)
-    𝓠 = leiden(G, 𝓗, 𝓠, weight="weight")
+    Q = leiden(G, H, Q, weight="weight")
 
-    assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
+    assert Q.as_set() == WEIGHTED_BARBELL_GOOD
 
 
 @seed_rng(0)
@@ -177,10 +177,10 @@ def test_louvain_weighted_barbell_cpm() -> None:
     G = _get_weighted_barbell_graph()
 
     # The following resolution parameter for the CPM was found using binary search on the interval [0.95, 1.05].
-    𝓗: QualityFunction[int] = CPM(0.9999999999999986)
-    𝓠 = louvain(G, 𝓗, weight="weight")
+    H: QualityFunction[int] = CPM(0.9999999999999986)
+    Q = louvain(G, H, weight="weight")
 
-    assert 𝓠.as_set() == WEIGHTED_BARBELL_BAD
+    assert Q.as_set() == WEIGHTED_BARBELL_BAD
 
 
 # Another seed, leading to the partition that the Louvain algorithm cannot reach.
@@ -193,7 +193,7 @@ def test_leiden_weighted_barbell_cpm() -> None:
     """
     G = _get_weighted_barbell_graph()
 
-    𝓗: QualityFunction[int] = CPM(0.5)
-    𝓠 = leiden(G, 𝓗, weight="weight")
+    H: QualityFunction[int] = CPM(0.5)
+    Q = leiden(G, H, weight="weight")
 
-    assert 𝓠.as_set() == WEIGHTED_BARBELL_GOOD
+    assert Q.as_set() == WEIGHTED_BARBELL_GOOD

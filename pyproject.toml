@@ -35,7 +35,6 @@ exclude_also = [
 line-length = 140
 select = [ "E", "F", "D", "UP", "W", "N", "I", "ANN", "RUF", "PL" ]
 ignore = [
-    "RUF001", "RUF002", "RUF003",  # Ignore warnings about ambiguous unicode characters (𝓗, 𝓟, …)
     "ANN101", "ANN102",  # Ignore missing type of `self` and `cls` args, which mypy infers (see docs for ANN101, ANN102)
     "N803", "N806",  # Ignore warnings about uppercase, single-letter variable names (G, H, …)
 ]

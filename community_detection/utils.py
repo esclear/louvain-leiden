@@ -35,7 +35,7 @@ class Partition(Generic[T_co]):
         self, G: Graph, sets: list[set[T_co]], node_part: dict[T_co, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT
     ) -> None:
         """
-        Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
+        Create a new partition of the graph G, given by the nodes in the partition P of G's nodes.
 
         This constructor is meant for internal use only, please use `Partition.from_partition` instead.
         """
@@ -61,14 +61,14 @@ class Partition(Generic[T_co]):
         self._partition_degree_sums: list[int] = degree_sums
 
     @classmethod
-    def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T_co]] | Partition[T_co], weight: None | str = None) -> Partition[T_co]:
-        """Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes."""
-        if not Partition.is_partition(G, 𝓟):
-            raise AssertionError("𝓟 must be a partition of G!")
+    def from_partition(cls, G: Graph, P: Collection[Collection[T_co]] | Partition[T_co], weight: None | str = None) -> Partition[T_co]:
+        """Create a new partition of the graph G, given by the nodes in the partition P of G's nodes."""
+        if not Partition.is_partition(G, P):
+            raise AssertionError("P must be a partition of G!")
 
         # The partition as a list of sets
         # Transform the given collection into a list of sets representing the communities
-        sets = [set(c) for c in 𝓟]
+        sets = [set(c) for c in P]
 
         # Generate the lookup table
         # (The order of nested comprehensions is a bit unintuitive in python.)
@@ -100,15 +100,15 @@ class Partition(Generic[T_co]):
         return cls(G, sets, node_part, degree_sums, weight)
 
     @staticmethod
-    def is_partition(G: Graph, 𝓟: Collection[Collection[T_co]] | Partition[T_co]) -> bool:
-        """Determine whether 𝓟 is indeed a partition of G."""
+    def is_partition(G: Graph, P: Collection[Collection[T_co]] | Partition[T_co]) -> bool:
+        """Determine whether P is indeed a partition of G."""
         # There used to be a custom implementation here, which turned out to be similar to Networkx' implementation.
         # Since I expect Networkx' implementation to be as optimized as possible and since this is only used as a
         # sanity check in the constructor, I decided to let the experts handle this.
-        if isinstance(𝓟, Partition) and 𝓟.G == G:
+        if isinstance(P, Partition) and P.G == G:
             return True
 
-        result: bool = community_utils.is_partition(G, 𝓟)
+        result: bool = community_utils.is_partition(G, P)
         return result
 
     @staticmethod
@@ -168,9 +168,9 @@ class Partition(Generic[T_co]):
 
         # If the target set is non-empty, i.e. an existing community, determine its index in _sets
         if len(target) > 0:
-            # Get any element of the target set …
+            # Get any element of the target set ...
             el = next(iter(target))
-            # … and query its index in the _sets list
+            # ... and query its index in the _sets list
             target_partition_idx = self._node_part[el]
         # Otherwise, create a new (currently empty) partition and get its index.
         else:
@@ -258,9 +258,9 @@ class Partition(Generic[T_co]):
 
         # Otherwise
         G: Graph = Partition.__find_original_graph(self.G)
-        𝓟 = [Partition.__collect_nodes(self.G, C) for C in self._sets]
+        P = [Partition.__collect_nodes(self.G, C) for C in self._sets]
 
-        return Partition.from_partition(G, 𝓟, weight=self._weight)
+        return Partition.from_partition(G, P, weight=self._weight)
 
     @property
     def communities(self) -> tuple[set[T_co], ...]:
@@ -311,13 +311,13 @@ def argmax(objective_function: Callable[[T_co], float], parameters: list[T_co]) 
 
     # find the maximum by iterating over the remaining indices (beginning at index 1)
     for k in range(1, len(parameters)):
-        optₖ = parameters[k]
-        valₖ = objective_function(optₖ)
+        opt_k = parameters[k]
+        val_k = objective_function(opt_k)
 
-        if valₖ > val:
+        if val_k > val:
             idx = k
-            opt = optₖ
-            val = valₖ
+            opt = opt_k
+            val = val_k
 
     return opt, val, idx
 

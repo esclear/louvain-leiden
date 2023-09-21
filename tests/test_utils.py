@@ -15,31 +15,31 @@ def test_partition_creation() -> None:
     H = nx.generators.barbell_graph(5, 2)
 
     # Check that we can create valid partitions for the graphs above
-    𝓟: Partition[int] = Partition.from_partition(E, [])
-    assert 𝓟 is not None
-    assert 𝓟.communities == ()
+    P: Partition[int] = Partition.from_partition(E, [])
+    assert P is not None
+    assert P.communities == ()
 
-    𝓠 = Partition.from_partition(G, [{0, 1, 2, 3, 4}])
-    assert 𝓠 is not None
-    assert 𝓠.communities == ({0, 1, 2, 3, 4},)
-    assert 𝓠.degree_sum(0) == 5 * 4
+    Q = Partition.from_partition(G, [{0, 1, 2, 3, 4}])
+    assert Q is not None
+    assert Q.communities == ({0, 1, 2, 3, 4},)
+    assert Q.degree_sum(0) == 5 * 4
 
-    𝓡 = Partition.from_partition(G, [{0}, {1}, {2}, {3}, {4}])
-    assert 𝓡 is not None
-    assert 𝓡.communities == ({0}, {1}, {2}, {3}, {4})
-    assert 𝓡.degree_sum(0) == 4
+    R = Partition.from_partition(G, [{0}, {1}, {2}, {3}, {4}])
+    assert R is not None
+    assert R.communities == ({0}, {1}, {2}, {3}, {4})
+    assert R.degree_sum(0) == 4
 
-    𝓢 = Partition.from_partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
-    assert 𝓢 is not None
-    assert 𝓢.communities == ({0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11})
-    assert 𝓢.degree_sum(0) == 21
-    assert 𝓢.degree_sum(5) == 4
-    assert 𝓢.degree_sum(7) == 21
+    S = Partition.from_partition(H, [{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11}])
+    assert S is not None
+    assert S.communities == ({0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9, 10, 11})
+    assert S.degree_sum(0) == 21
+    assert S.degree_sum(5) == 4
+    assert S.degree_sum(7) == 21
 
-    assert len(𝓟) == 0
-    assert len(𝓠) == 1
-    assert len(𝓡) == 5
-    assert len(𝓢) == 3
+    assert len(P) == 0
+    assert len(Q) == 1
+    assert len(R) == 5
+    assert len(S) == 3
 
     # Now check that partition creation fails when given sets which don't form a partition of the graph's nodes:
     # Partition contains nodes not in the graph:
@@ -57,34 +57,34 @@ def test_partition_node_moving() -> None:
     G = nx.generators.classic.complete_graph(5)
     comms = [{0, 1, 2, 3}, {4}]
 
-    𝓟 = Partition.from_partition(G, comms)  # Start with the partition indicated in P and do each of the following:
-    𝓠 = copy(𝓟).move_node(0, set())         # a) Move node 0 to its own community (i.e. nothing should change)
-    𝓡 = copy(𝓟).move_node(0, {4})           # b) Move node 0 to the community which contains node 4
-    𝓢 = copy(𝓟).move_node(4, {0, 1, 2, 3})  # c) Move node 0 to the community containing all other nodes
+    P = Partition.from_partition(G, comms)  # Start with the partition indicated in P and do each of the following:
+    Q = copy(P).move_node(0, set())         # a) Move node 0 to its own community (i.e. nothing should change)
+    R = copy(P).move_node(0, {4})           # b) Move node 0 to the community which contains node 4
+    S = copy(P).move_node(4, {0, 1, 2, 3})  # c) Move node 0 to the community containing all other nodes
 
     # Now, verify that both the communities and the membership of node 4 are correct:
-    assert 𝓟.node_community(4) == {4}
-    assert 𝓟.as_set() == freeze([{0, 1, 2, 3}, {4}])
-    assert 𝓟.degree_sum(0) == 4 * 4
-    assert 𝓟.degree_sum(4) == 4
+    assert P.node_community(4) == {4}
+    assert P.as_set() == freeze([{0, 1, 2, 3}, {4}])
+    assert P.degree_sum(0) == 4 * 4
+    assert P.degree_sum(4) == 4
 
-    assert 𝓠.node_community(4) == {4}
-    assert 𝓠.as_set() == freeze([{1, 2, 3}, {4}, {0}])
-    assert 𝓠.degree_sum(0) == 4
-    assert 𝓠.degree_sum(1) == 3 * 4
-    assert 𝓠.degree_sum(4) == 4
+    assert Q.node_community(4) == {4}
+    assert Q.as_set() == freeze([{1, 2, 3}, {4}, {0}])
+    assert Q.degree_sum(0) == 4
+    assert Q.degree_sum(1) == 3 * 4
+    assert Q.degree_sum(4) == 4
 
-    assert 𝓡.node_community(4) == {0, 4}
-    assert 𝓡.as_set() == freeze([{1, 2, 3}, {0, 4}])
-    assert 𝓡.degree_sum(0) == 2 * 4
-    assert 𝓡.degree_sum(1) == 3 * 4
-    assert 𝓡.degree_sum(4) == 2 * 4
+    assert R.node_community(4) == {0, 4}
+    assert R.as_set() == freeze([{1, 2, 3}, {0, 4}])
+    assert R.degree_sum(0) == 2 * 4
+    assert R.degree_sum(1) == 3 * 4
+    assert R.degree_sum(4) == 2 * 4
 
-    assert 𝓢.node_community(4) == {0, 1, 2, 3, 4}
-    assert 𝓢.as_set() == freeze([{0, 1, 2, 3, 4}])
-    assert 𝓢.degree_sum(0) == 5 * 4
-    assert 𝓢.degree_sum(1) == 5 * 4
-    assert 𝓢.degree_sum(4) == 5 * 4
+    assert S.node_community(4) == {0, 1, 2, 3, 4}
+    assert S.as_set() == freeze([{0, 1, 2, 3, 4}])
+    assert S.degree_sum(0) == 5 * 4
+    assert S.degree_sum(1) == 5 * 4
+    assert S.degree_sum(4) == 5 * 4
 
 
 def test_freeze() -> None:
@@ -119,27 +119,27 @@ def test_partition_flatten() -> None:
     # First, check with a simple graph
     G = nx.generators.classic.complete_graph(10)
 
-    𝓟: Partition[int] = Partition.singleton_partition(G)                         # singleton partition
-    𝓠 = Partition.from_partition(G, [{ *G.nodes }])                              # trivial partition (all nodes in one community)
-    𝓡 = Partition.from_partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])  # non-trivial partition
+    P: Partition[int] = Partition.singleton_partition(G)                         # singleton partition
+    Q = Partition.from_partition(G, [{ *G.nodes }])                              # trivial partition (all nodes in one community)
+    R = Partition.from_partition(G, [ {0, 1, 2}, {3, 4}, {5, 6}, {7, 8}, {9} ])  # non-trivial partition
 
     # For non-aggregate partitions, the flattened partition should equal the original partition
-    assert 𝓟.flatten() == 𝓟
-    assert 𝓠.flatten() == 𝓠
-    assert 𝓡.flatten() == 𝓡
+    assert P.flatten() == P
+    assert Q.flatten() == Q
+    assert R.flatten() == R
 
     # Calculate an aggregate graph by repeatedly merging, starting with the non-trivial partition from above:
-    H = 𝓡.aggregate_graph()
+    H = R.aggregate_graph()
     # On the aggregate graph H, define a new partition, consisting of three communities.
     # It combines the nodes 0..4, 5..6, and 7..9 of the *underlying graph* G into one community each.
     # That is, combine sets 0 and 1 ({0,1,2} and {3,4}), take set 2 ({5,6}), and combine sets 3 and 4 ({7,8} and {9}):
-    𝓢 = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
+    S = Partition.from_partition(H, [ { 0, 1 }, { 2 }, { 3, 4 } ])
 
-    J = 𝓢.aggregate_graph()
-    𝓣: Partition[int] = Partition.singleton_partition(J)
+    J = S.aggregate_graph()
+    T: Partition[int] = Partition.singleton_partition(J)
 
-    𝓕 = 𝓣.flatten()
-    assert freeze(𝓕.communities) == freeze([{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9}])
+    F = T.flatten()
+    assert freeze(F.communities) == freeze([{0, 1, 2, 3, 4}, {5, 6}, {7, 8, 9}])
 
 
 def test_argmax() -> None:
@@ -163,9 +163,9 @@ def test_argmax() -> None:
 def test_aggregate_graph() -> None:
     G = nx.generators.classic.complete_graph(5)
     communities = [{0}, {1, 2}, {3, 4}]
-    𝓟 = Partition.from_partition(G, communities)
+    P = Partition.from_partition(G, communities)
 
-    H = 𝓟.aggregate_graph()
+    H = P.aggregate_graph()
 
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)
@@ -184,8 +184,8 @@ def test_aggregate_graph() -> None:
     assert H[2][2][DataKeys.WEIGHT] == 1
 
     # With an additional partition, generate an additional aggregate graph
-    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], weight=DataKeys.WEIGHT)
-    J = 𝓠.aggregate_graph()
+    Q = Partition.from_partition(H, [{0, 1}, {2}], weight=DataKeys.WEIGHT)
+    J = Q.aggregate_graph()
 
     # Verify that the nodes of the aggregate graph correspond to the communities
     assert list(J.nodes(data=DataKeys.NODES)) == [(0, frozenset({0, 1})), (1, frozenset({2}))]
@@ -199,13 +199,13 @@ def test_aggregate_graph() -> None:
 def test_degree_sums() -> None:
     G = nx.generators.classic.complete_graph(5)
     communities = [{0}, {1, 2}, {3, 4}]
-    𝓟 = Partition.from_partition(G, communities)
+    P = Partition.from_partition(G, communities)
 
-    assert 𝓟.degree_sum(0) == 4
-    assert 𝓟.degree_sum(1) == 𝓟.degree_sum(2) == 8
-    assert 𝓟.degree_sum(3) == 𝓟.degree_sum(4) == 8
+    assert P.degree_sum(0) == 4
+    assert P.degree_sum(1) == P.degree_sum(2) == 8
+    assert P.degree_sum(3) == P.degree_sum(4) == 8
 
-    H = 𝓟.aggregate_graph()
+    H = P.aggregate_graph()
 
     # Short sanity check: We have three nodes, representing the three communities
     # and as many edges as before (recall that the aggregate graph H is a multigraph!)
@@ -213,10 +213,10 @@ def test_degree_sums() -> None:
     assert H.size() == 5
 
     # With an additional partition, generate an additional aggregate graph
-    𝓠 = Partition.from_partition(H, [{0, 1}, {2}], DataKeys.WEIGHT)
+    Q = Partition.from_partition(H, [{0, 1}, {2}], DataKeys.WEIGHT)
 
-    assert 𝓠.degree_sum(0) == 𝓠.degree_sum(1) == 12
-    assert 𝓠.degree_sum(2) == 8
+    assert Q.degree_sum(0) == Q.degree_sum(1) == 12
+    assert Q.degree_sum(2) == 8
 
 
 def test_singleton_partition() -> None:
@@ -224,10 +224,10 @@ def test_singleton_partition() -> None:
     G = nx.generators.classic.complete_graph(5)
     H = nx.generators.barbell_graph(5, 2)
 
-    𝓟: Partition[int] = Partition.singleton_partition(E)
-    𝓠: Partition[int] = Partition.singleton_partition(G)
-    𝓡: Partition[int] = Partition.singleton_partition(H)
+    P: Partition[int] = Partition.singleton_partition(E)
+    Q: Partition[int] = Partition.singleton_partition(G)
+    R: Partition[int] = Partition.singleton_partition(H)
 
-    assert 𝓟.as_set() == freeze([])
-    assert 𝓠.as_set() == freeze([{0}, {1}, {2}, {3}, {4}])
-    assert 𝓡.as_set() == freeze([{i} for i in range(12)])
+    assert P.as_set() == freeze([])
+    assert Q.as_set() == freeze([{0}, {1}, {2}, {3}, {4}])
+    assert R.as_set() == freeze([{i} for i in range(12)])
