@@ -51,7 +51,7 @@ Alternatively, if you're running [nix](https://nixos.org) and if you are so incl
 ## Sample Notebooks
 For demonstration purposes of this library, the following notebooks are included in this repository:
 - [`Demo (Karate Club).ipynb`](Demo%20(Karate%20Club).ipynb), which demonstrates the usage of this implementation,
-- [`Performance Comparison.ipynb`](Performance%20Comparison.ipynb), which compares our implementation of the Louvain algorithm to the implementation in the NetworkX library, and
+- [`NetworkX Comparison.ipynb`](NetworkX%20Comparison.ipynb), which compares our implementation of the Louvain algorithm to the implementation in the NetworkX library, and
 - [`Parameter Exploration.ipynb`](Parameter%20Exploration.ipynb), which examines the influence of parameters on the detected communities on a larger problem instance.
 
 ## Tests and Static Analysis
