@@ -48,6 +48,13 @@ ruff==0.0.290
 The python dependencies are specified in the [`requirements.txt`](requirements.txt) file and can be installed (preferrably in a virtual environment) using the command `pip install -r requirements.txt`.  
 Alternatively, if you're running [nix](https://nixos.org) and if you are so inclined, you can also run `nix-shell` to install the dependencies.
 
+### Caligraphic Symbols in the Source Code
+To keep the Python code as close as possible to the pseudocode and the notation used, Unicode symbols are used for some identifiers.
+The Python specification allows certain Unicode symbols to be used in identifiers, for example Greek symbols such as $\theta$, or special variants of Latin symbols such as $\mathcal{H}$ and $\mathcal{P}$.
+This functionality is described in more detail in the [Python Enhancement Proposal 3131](https://peps.python.org/pep-3131/).
+In particular, one can replace uses of the special variants such as `𝓗` by their "normal" variants, such as `H` here.
+If you cannot use the unicode version of the code, for example due to rendering issues, you may also use the [`ascii` branch](https://github.com/esclear/louvain-leiden/tree/ascii) instead.
+
 ## Sample Notebooks
 For demonstration purposes of this library, the following notebooks are included in this repository:
 - [`Demo (Karate Club).ipynb`](Demo%20(Karate%20Club).ipynb), which demonstrates the usage of this implementation,
