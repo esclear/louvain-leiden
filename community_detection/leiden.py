@@ -76,8 +76,20 @@ def leiden(
         # Create the aggregate graph of G based on 𝓟ᵣ …
         G = 𝓟ᵣ.aggregate_graph()
 
-        # … but maintain partition 𝓟
-        𝓟 = Partition.from_partition(G, [{v for v in G.nodes if G.nodes[v][Keys.NODES] <= C} for C in 𝓟], Keys.WEIGHT)
+        # … but maintain partition 𝓟, that is, lift it to the aggregate graph.
+        # The following lines are equivalent to, but way faster than
+        # `partitions = [{v for v in G.nodes if G.nodes[v][Keys.NODES] <= C} for C in 𝓟]`.
+        partitions: dict[int, set[T]] = {id: set() for id in range(len(𝓟))}
+        # Iterate through the aggregate graph's nodes
+        for v_agg, nodes in G.nodes(data=Keys.NODES):
+            # Get the id of the community that the nodes collected in this super node were part of
+            community_id = 𝓟._node_part[next(iter(nodes))]
+            # Note that down in the partitions dict
+            partitions[community_id] = partitions[community_id] | {v_agg}
+        # Now, discard the indices and produce the list of values, i.e. the lifted partition
+        partitions_l: list[set[T]] = list(partitions.values())
+
+        𝓟 = Partition.from_partition(G, partitions_l, Keys.WEIGHT)
 
 
 def move_nodes_fast(G: Graph, 𝓟: Partition[T], 𝓗: QualityFunction[T]) -> Partition[T]:

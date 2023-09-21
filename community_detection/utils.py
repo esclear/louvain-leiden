@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Collection, Iterable, Iterator, Set
 from copy import deepcopy
-from itertools import combinations_with_replacement
 from typing import Callable, Generic, TypeVar, Union, cast
 
-from networkx import Graph, cut_size
+from networkx import Graph
 from networkx.algorithms.community import community_utils
 
 S = TypeVar("S")
@@ -88,13 +87,13 @@ class Partition(Generic[T]):
         data = [({v}, (v, i), G.degree(v, weight=weight)) for i, v in enumerate(G.nodes)]
         if not data:
             # Handle the empty graphs -> return empty lists and empty lookup dict
-            sets, node_part, degree_sums = [], dict(), []  # type: tuple[list[set[T]], dict[T,int], list[int]]
+            sets, node_part, degree_sums = [], dict(), []  # type: tuple[list[set[T_co]], dict[T_co,int], list[int]]
         else:
             # Otherwise, split `data` into the respective representations we need to create the partition:
             # Sets becomes the list of (singleton) communities, part_tuples the list of (node, index) tuples and degree_sums a
             # list of node degrees.
             # Ignore the assignment typecheck, which is currently broken (see https://stackoverflow.com/a/74380452/11080677).
-            sets, part_tuples, degree_sums = map(list, zip(*data))  # type: ignore[assignment]
+            sets, part_tuples, degree_sums = map(list, zip(*data))
             # From the list of tuples, create the dictionary we need
             node_part = dict(part_tuples)
 
@@ -208,8 +207,7 @@ class Partition(Generic[T]):
         node. Every edge between two nodes a and b is represented by an edge in the multi-graph, between the nodes that
         represent the communities that a and b, respectively, are members of.
         """
-        # Determine the number of communities and get a list of the communities
-        n_c = len(self._sets)
+        # Get a list of the communities
         node_weights = self.G.nodes.data(self._weight, default=1)
 
         # Create graph H that will become the aggregate graph
