@@ -10,7 +10,7 @@ from networkx import Graph
 from networkx.algorithms.community import community_utils
 
 S = TypeVar("S")
-T = TypeVar("T", covariant=True)
+T_co = TypeVar("T_co", covariant=True)
 
 NodeData = Union[S, 'Collection[NodeData[S]]']
 
@@ -28,11 +28,11 @@ class DataKeys:
     PARENT_PARTITION = "__da_ll_pp__"
 
 
-class Partition(Generic[T]):
+class Partition(Generic[T_co]):
     """This class represents a partition of a graph's nodes."""
 
     def __init__(
-        self, G: Graph, sets: list[set[T]], node_part: dict[T, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT
+        self, G: Graph, sets: list[set[T_co]], node_part: dict[T_co, int], degree_sums: list[int], weight: None | str = DataKeys.WEIGHT
     ) -> None:
         """
         Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes.
@@ -50,18 +50,18 @@ class Partition(Generic[T]):
         # We store /lists/ of sets instead of /sets/ of sets, because changeable sets in python are not /hashable/ and
         # thus can't be stored in a set. We could store a set of frozen sets instead, however, this would complicate
         # operations such as the move_node operation below, where we modify the partitions.
-        self._sets: list[set[T]] = sets
+        self._sets: list[set[T_co]] = sets
 
         # For faster moving of nodes, store for each node the community it belongs to.
         # This is a dict, mapping each node to its community (the community's index in self._sets).
-        self._node_part: dict[T, int] = node_part
+        self._node_part: dict[T_co, int] = node_part
 
         # Store the key which is used for getting the weight information
         self._weight: None | str = weight
         self._partition_degree_sums: list[int] = degree_sums
 
     @classmethod
-    def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T]] | Partition[T], weight: None | str = None) -> Partition[T]:
+    def from_partition(cls, G: Graph, 𝓟: Collection[Collection[T_co]] | Partition[T_co], weight: None | str = None) -> Partition[T_co]:
         """Create a new partition of the graph G, given by the nodes in the partition 𝓟 of G's nodes."""
         if not Partition.is_partition(G, 𝓟):
             raise AssertionError("𝓟 must be a partition of G!")
@@ -79,9 +79,9 @@ class Partition(Generic[T]):
         return cls(G, sets, node_part, partition_degree_sums, weight)
 
     @classmethod
-    def singleton_partition(cls, G: Graph, weight: None | str = None) -> Partition[T]:
+    def singleton_partition(cls, G: Graph, weight: None | str = None) -> Partition[T_co]:
         """Create a singleton partition, in which each community consists of exactly one vertex."""
-        part_tuples: list[tuple[T, int]]
+        part_tuples: list[tuple[T_co, int]]
         # Generate a list of triples containing all necessary information: The community (a singleton set), a (node, index) tuple
         # for the corresponding entry in the node_part lookup dict, and the degree.
         data = [({v}, (v, i), G.degree(v, weight=weight)) for i, v in enumerate(G.nodes)]
@@ -100,7 +100,7 @@ class Partition(Generic[T]):
         return cls(G, sets, node_part, degree_sums, weight)
 
     @staticmethod
-    def is_partition(G: Graph, 𝓟: Collection[Collection[T]] | Partition[T]) -> bool:
+    def is_partition(G: Graph, 𝓟: Collection[Collection[T_co]] | Partition[T_co]) -> bool:
         """Determine whether 𝓟 is indeed a partition of G."""
         # There used to be a custom implementation here, which turned out to be similar to Networkx' implementation.
         # Since I expect Networkx' implementation to be as optimized as possible and since this is only used as a
@@ -112,7 +112,7 @@ class Partition(Generic[T]):
         return result
 
     @staticmethod
-    def __collect_nodes(G: Graph, nodes: Collection[T]) -> list[T]:
+    def __collect_nodes(G: Graph, nodes: Collection[T_co]) -> list[T_co]:
         """Collect the nodes in the underlying graph that correspond to the given `nodes` in the aggregate graph `G`."""
         if DataKeys.PARENT_PARTITION not in G.graph or DataKeys.PARENT_GRAPH not in G.graph:
             # If none exists (i.e. we have the original graph) return the nodes we have found
@@ -131,7 +131,7 @@ class Partition(Generic[T]):
         else:
             return G
 
-    def __copy__(self) -> Partition[T]:
+    def __copy__(self) -> Partition[T_co]:
         """Create a copy of this partition object."""
         cls = self.__class__
         cpy = cls.__new__(cls)
@@ -149,7 +149,7 @@ class Partition(Generic[T]):
             return self._sets == other._sets and self._weight == other._weight
         return NotImplemented
 
-    def __iter__(self) -> Iterator[set[T]]:
+    def __iter__(self) -> Iterator[set[T_co]]:
         """Make a Partition object iterable, returning an iterator over the communities."""
         return self._sets.__iter__()
 
@@ -161,7 +161,7 @@ class Partition(Generic[T]):
     # (especially for collections; see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
     # However, ths is not a problem for move_node, as we don't add new entries to the partition and don't rely on any functionality of the
     # type T, which is only used as a type marker here.
-    def move_node(self, v: T, target: Set[T]) -> Partition[T]:  # type: ignore
+    def move_node(self, v: T_co, target: Set[T_co]) -> Partition[T_co]:  # type: ignore
         """Move node v from its current community in this partition to the given target community."""
         # Determine the index of the community that v was in initially
         source_partition_idx = self._node_part[v]
@@ -231,26 +231,26 @@ class Partition(Generic[T]):
     # Using a covariant type variable as a function parameter (as we do here with T) can cause problems.
     # (see e.g. https://github.com/python/mypy/issues/7049#issuecomment-504928431 for an explanation).
     # However, as node_community serves as a pure read-only function, doing so poses no problem here and keeps the API simple.
-    def node_community(self, v: T) -> set[T]:  # type: ignore
+    def node_community(self, v: T_co) -> set[T_co]:  # type: ignore
         """Get the community the node v is currently part of."""
         return self._sets[self._node_part[v]]
 
     # Similar to node_community: adjacent_communities does not change the Partition, but solely provides access to some of its data.
-    def adjacent_communities(self, v: T) -> set[frozenset[T]]:  # type: ignore
+    def adjacent_communities(self, v: T_co) -> set[frozenset[T_co]]:  # type: ignore
         """Get the set of communities which have nodes are adjacent to v, *always including* v's community."""
         neighbor_community_ids = {self._node_part[u] for u in self.G[v]} | {self._node_part[v]}
         return {frozenset(self._sets[i]) for i in neighbor_community_ids}
 
-    def as_set(self) -> set[frozenset[T]]:
+    def as_set(self) -> set[frozenset[T_co]]:
         """Return a set of sets of nodes that represents the communities."""
         return freeze(self.communities)
 
     # Here, we also permit a covariant type variable as a function parameter, as this is a pure read-only function (c.f. node_community).
-    def degree_sum(self, v: T) -> int:  # type: ignore
+    def degree_sum(self, v: T_co) -> int:  # type: ignore
         """Get the sum of node degrees of nodes in the community that `v` belongs to."""
         return self._partition_degree_sums[self._node_part[v]]
 
-    def flatten(self) -> Partition[T]:
+    def flatten(self) -> Partition[T_co]:
         """Flatten the partition, producing a partition of the original graph."""
         # If this is not an aggregate graph, return self.
         if DataKeys.PARENT_GRAPH not in self.G.graph or DataKeys.PARENT_PARTITION not in self.G.graph:
@@ -263,7 +263,7 @@ class Partition(Generic[T]):
         return Partition.from_partition(G, 𝓟, weight=self._weight)
 
     @property
-    def communities(self) -> tuple[set[T], ...]:
+    def communities(self) -> tuple[set[T_co], ...]:
         """
         Return the communities in this partition as a tuple.
 
@@ -272,7 +272,7 @@ class Partition(Generic[T]):
         return tuple(self._sets)
 
 
-def freeze(set_list: Iterable[Set[T]]) -> set[frozenset[T]]:
+def freeze(set_list: Iterable[Set[T_co]]) -> set[frozenset[T_co]]:
     """
     Given a list of set, return a set of (frozen) sets representing those sets.
 
@@ -294,7 +294,7 @@ def node_total(G: Graph, N: NodeData[S]) -> int:
         return sum(node_total(G, v) for v in N)
 
 
-def argmax(objective_function: Callable[[T], float], parameters: list[T]) -> tuple[T, float, int]:
+def argmax(objective_function: Callable[[T_co], float], parameters: list[T_co]) -> tuple[T_co, float, int]:
     """
     Find the arg max with respect to a given objective function over a given list of parameters.
 

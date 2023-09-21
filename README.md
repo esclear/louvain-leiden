@@ -42,7 +42,7 @@ pytest==7.2.1
 pytest-cov==4.0.0
 black==23.1.0
 mypy==1.0.1
-ruff==0.0.269
+ruff==0.0.290
 ```
 
 The python dependencies are specified in the [`requirements.txt`](requirements.txt) file and can be installed (preferrably in a virtual environment) using the command `pip install -r requirements.txt`.  
@@ -86,7 +86,7 @@ To reformat the code according to the code style, run the following command:
 ```bash
 black .
 ```
-You should see the line `14 files left unchanged.` when running it on a fresh checkout.
+You should see the line `15 files left unchanged.` when running it on a fresh checkout.
 
 #### Type checker: `mypy`
 Python is a dynamically typed language, meaning that the type of a variable may change over its lifetime and that type checking is done at runtime.  
@@ -96,7 +96,7 @@ To check this project using `mypy`, run the following command:
 ```bash
 mypy .
 ```
-You should see the message `Success: no issues found in 14 source files`.
+You should see the message `Success: no issues found in 15 source files`.
 
 ## Sources
 The following papers were used as sources for the implementation:
