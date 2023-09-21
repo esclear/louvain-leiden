@@ -51,8 +51,8 @@ Alternatively, if you're running [nix](https://nixos.org) and if you are so incl
 ## Sample Notebooks
 For demonstration purposes of this library, the following notebooks are included in this repository:
 - [`Demo (Karate Club).ipynb`](Demo%20(Karate%20Club).ipynb), which demonstrates the usage of this implementation,
-- [`NetworkX Comparison.ipynb`](NetworkX%20Comparison.ipynb), which compares our implementation of the Louvain algorithm to the implementation in the NetworkX library, and
-- [`Parameter Exploration.ipynb`](Parameter%20Exploration.ipynb), which examines the influence of parameters on the detected communities on a larger problem instance.
+- [`Parameter Exploration.ipynb`](Parameter%20Exploration.ipynb), which examines the influence of parameters on the detected communities on a larger problem instance, and
+- [`Runtime Comparisons.ipynb`](Runtime%20Comparisons.ipynb) which applies the implementations to networks of varying size to compare the runtimes.
 
 ## Tests and Static Analysis
 
@@ -107,7 +107,7 @@ The notebooks in this repository use the following datasets:
 - The [Karate Club][data-karateclub] dataset (provided by the NetworkX library)
 - The [Cora][data-cora] dataset (contained in the [datasets](datasets) directory)
 - The [Jazz Musicians][data-jazz] dataset (also part of the [datasets](datasets) directory)
-- The [Arxiv GR-QC][data-grqc] dataset (also part of the [datasets](datasets) directory)
+- The [Arxiv GR-QC][data-grqc] dataset (also also part of the [datasets](datasets) directory)
 
 [src-blondel]: https://doi.org/10.1088/1742-5468/2008/10/p10008 "Blondel, Guillaume, Lambiotte, Lefebvre: Fast unfolding of communities in large networks"
 [src-traag]: https://doi.org/10.1038/s41598-019-41695-z "Traag, Waltman, van Eck: From Louvain to Leiden: guaranteeing well-connected communities"
