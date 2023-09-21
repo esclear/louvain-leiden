@@ -2,8 +2,8 @@ import random
 from functools import wraps
 from typing import Callable, ParamSpec, TypeVar
 
-T = TypeVar('T')
-P = ParamSpec('P')
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 def partition_randomly(xs: list[int]) -> list[list[int]]:

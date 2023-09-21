@@ -42,7 +42,7 @@ class Modularity(QualityFunction[T], Generic[T]):
 
         # For empty graphs (without edges) return NaN, as Modularity is not defined then, due to the division by `2*m`.)
         if m == 0:
-            return float('NaN')
+            return float("NaN")
 
         norm: float = self.γ / (2 * m)
 

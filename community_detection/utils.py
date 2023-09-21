@@ -12,7 +12,7 @@ from networkx.algorithms.community import community_utils
 S = TypeVar("S")
 T_co = TypeVar("T_co", covariant=True)
 
-NodeData = Union[S, 'Collection[NodeData[S]]']
+NodeData = Union[S, "Collection[NodeData[S]]"]
 
 
 class DataKeys:
