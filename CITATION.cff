@@ -1,0 +1,29 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Louvain and Leiden Implementation
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Daniel
+    family-names: Albert
+    orcid: 'https://orcid.org/0000-0003-2878-4284'
+identifiers:
+  - type: url
+    value: 'https://git.esclear.de/esclear/louvain-leiden'
+    description: Official repository
+repository-code: 'https://git.esclear.de/esclear/louvain-leiden'
+abstract: >-
+  A Python implementation of the Louvain and Leiden
+  Community Detection Algorithms
+keywords:
+  - python
+  - community-detection
+  - louvain
+  - leiden
+commit: 5afd180947298bcd5d2d0f96424836ebb09e42bd
+version: v2.0
+date-released: '2023-09-21'
